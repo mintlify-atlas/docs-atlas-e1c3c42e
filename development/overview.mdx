@@ -1,0 +1,340 @@
+---
+title: Architecture Overview
+description: High-level architecture, design decisions, and core principles behind Vocab Vault
+---
+
+Vocab Vault is a mobile-first flashcard application designed to help developers learn technical vocabulary needed for AI-assisted coding. This page outlines the architectural decisions and design principles that guide the application.
+
+## Core Architecture Principles
+
+### Mobile-First Design
+
+The application is built with a mobile-first approach, prioritizing touch interactions and responsive layouts:
+
+- **Touch-optimized gestures** - Swipe to flip cards, swipe right for "Got it", natural mobile interactions
+- **Responsive layouts** - Adapts from mobile (320px) to desktop seamlessly
+- **Native mobile support** - Uses Capacitor to deploy as native iOS/Android apps
+- **Performance-focused** - Optimized bundle sizes with code splitting for fast mobile load times
+
+### Offline-First Architecture
+
+All user data is stored locally using Capacitor Preferences API:
+
+- **No backend required** - 100% client-side application
+- **Instant access** - No network delays or loading states
+- **Privacy-focused** - All data stays on the user's device
+- **Reliable** - Works perfectly without internet connection
+
+<Info>
+The offline-first approach means users can study anytime, anywhere, without worrying about connectivity or data usage.
+</Info>
+
+### State Management Pattern
+
+Vocab Vault uses a custom hook-based state management system rather than external libraries like Redux:
+
+```tsx
+// Central state management via useProgress hook
+const {
+  progress,
+  streak,
+  eli5Mode,
+  markTerm,
+  reviewCard,
+  getSrsStudyQueue
+} = useProgress();
+```
+
+**Key characteristics:**
+- **Custom hooks** - `useProgress`, `useDailyGoals`, `useSpeech` encapsulate all business logic
+- **Capacitor Preferences** - Persistent storage across app sessions
+- **React Context** - Theme and tooltip providers for global UI state
+- **Local state** - Component-level state for UI interactions
+
+This approach provides:
+- ✅ Simpler mental model - no complex reducers or actions
+- ✅ Better TypeScript inference
+- ✅ Easier testing and debugging
+- ✅ Less boilerplate code
+
+### Data Persistence Strategy
+
+Multiple storage keys organize different types of data:
+
+| Storage Key | Purpose | Data Structure |
+|------------|---------|----------------|
+| `vocabVaultProgress` | Term mastery status | `Record<termId, 'known' \| 'learning' \| 'unseen'>` |
+| `vocabVaultSRS` | Spaced repetition data | SM-2 algorithm cards with intervals |
+| `vocabVaultStreak` | Daily study streaks | `{ streak: number, lastStudyDate: string }` |
+| `vocabVaultAchievements` | Unlocked achievements | `string[]` |
+| `vocabVaultStats` | Usage statistics | `{ totalCardsViewed, logoClicks }` |
+| `vocabVaultEli5Mode` | ELI5 toggle state | `boolean` |
+
+## Spaced Repetition System (SRS)
+
+Vocab Vault implements the **SM-2 (SuperMemo 2)** algorithm for intelligent review scheduling:
+
+<Steps>
+  <Step title="Card Initialization">
+    New terms start with default values:
+    - Ease factor: 2.5
+    - Interval: 0 days
+    - Repetitions: 0
+  </Step>
+  
+  <Step title="Quality Rating">
+    After reviewing, users rate their recall (1-5):
+    - 1: Again (didn't remember)
+    - 3: Hard (struggled)
+    - 4: Good (correct with hesitation)
+    - 5: Easy (instant recall)
+  </Step>
+  
+  <Step title="Interval Calculation">
+    The algorithm calculates next review date:
+    - First review: 1 day
+    - Second review: 6 days
+    - Subsequent: interval × ease factor
+    - Failed cards reset to 1 day
+  </Step>
+  
+  <Step title="Study Queue">
+    Cards are scheduled intelligently:
+    - Due cards (past review date)
+    - New cards (never seen)
+    - Interleaved: 3 due cards, 1 new card
+  </Step>
+</Steps>
+
+### Mastery Levels
+
+The SRS system tracks mastery progression:
+
+- **New** - Never reviewed (repetitions = 0)
+- **Learning** - Active learning phase (interval < 7 days)
+- **Reviewing** - Building retention (7-21 days)
+- **Mastered** - Long-term memory (21+ days)
+
+## Component Architecture
+
+### Component Organization
+
+```
+src/
+├── components/          # Feature components
+│   ├── FlashCard.tsx   # Core card component with flip/swipe
+│   ├── CategoryCard.tsx # Category selection cards
+│   ├── QuizMode.tsx    # SRS quiz interface
+│   └── ui/             # Reusable UI primitives
+│       ├── button.tsx
+│       ├── dialog.tsx
+│       └── tooltip.tsx
+├── hooks/              # Business logic hooks
+│   ├── useProgress.ts  # Main state management
+│   ├── useDailyGoals.ts
+│   └── useSpeech.ts
+├── lib/                # Utility functions
+│   ├── sm2.ts         # Spaced repetition algorithm
+│   ├── utils.ts       # Tailwind merge, cn()
+│   └── share.ts       # Native sharing via Capacitor
+├── data/               # Static data
+│   ├── vocabulary.ts  # 600+ terms across 24 categories
+│   └── achievements.ts # Gamification system
+└── pages/              # Route components
+    ├── Index.tsx      # Main app page
+    └── NotFound.tsx   # 404 handler
+```
+
+### Component Composition Pattern
+
+Vocab Vault uses shadcn/ui's composition pattern:
+
+```tsx
+<Dialog>
+  <DialogTrigger asChild>
+    <Button variant="outline">Open Settings</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Daily Goal</DialogTitle>
+    </DialogHeader>
+    {/* Content */}
+  </DialogContent>
+</Dialog>
+```
+
+**Benefits:**
+- Components are copied into your codebase (not npm packages)
+- Full control over styling and behavior
+- Built on Radix UI primitives for accessibility
+- Easily customizable with Tailwind
+
+## Routing Strategy
+
+Vocab Vault uses a **Single Page Application (SPA)** architecture:
+
+- **React Router DOM** - Client-side routing
+- **Minimal routes** - `/` (main app) and `*` (404)
+- **Modal-based navigation** - Most features use dialogs instead of new routes
+- **Deep linking ready** - Can add route-based features later
+
+The modal-first approach provides:
+- Faster perceived performance (no full page loads)
+- Better mobile UX (contextual overlays)
+- Simpler state management (no route params)
+- Easier animations and transitions
+
+## Animation Strategy
+
+### Framer Motion Integration
+
+All animations use Framer Motion for performance:
+
+```tsx
+<motion.div
+  drag
+  dragConstraints={{ left: 0, right: 0 }}
+  onDragEnd={(e, info) => {
+    if (info.offset.x > 100) handleSwipeRight();
+  }}
+>
+  {/* Card content */}
+</motion.div>
+```
+
+**Key animation features:**
+- **Card flips** - 3D rotate transform on Y-axis
+- **Swipe gestures** - Drag with velocity-based detection
+- **Achievement popups** - Scale and fade with spring physics
+- **List animations** - Stagger children for category grids
+- **Confetti effects** - Canvas-based celebrations
+
+### Performance Optimization
+
+Animations are optimized for 60fps:
+- GPU-accelerated transforms (translate, scale, rotate)
+- Avoiding layout-triggering properties
+- Debounced gesture handlers
+- Reduced motion support for accessibility
+
+## Error Handling
+
+### Error Boundary
+
+The app wraps all content in an ErrorBoundary component:
+
+```tsx
+<ErrorBoundary>
+  <ThemeProvider>
+    <App />
+  </ThemeProvider>
+</ErrorBoundary>
+```
+
+This catches React errors and displays a user-friendly fallback UI instead of a blank screen.
+
+### Safe JSON Parsing
+
+All data persistence uses `safeJsonParse` utility from `~/workspace/source/src/lib/safeJson.ts:1`:
+
+```tsx
+// Returns fallback if parse fails instead of throwing
+const data = safeJsonParse(stored, defaultValue);
+```
+
+This prevents crashes from corrupted localStorage data.
+
+## Accessibility Considerations
+
+- **Radix UI primitives** - ARIA attributes and keyboard navigation built-in
+- **Focus management** - Modals trap focus, dialogs restore focus on close
+- **Color contrast** - WCAG AA compliant color system
+- **Reduced motion** - Respects `prefers-reduced-motion`
+- **Touch targets** - Minimum 44x44px for mobile
+- **Screen reader support** - Semantic HTML and ARIA labels
+
+## Build Optimization
+
+### Code Splitting Strategy
+
+The Vite configuration implements smart chunking from `~/workspace/source/vite.config.ts:33`:
+
+```ts
+manualChunks(id) {
+  // Vocabulary data separate for better caching
+  if (id.includes('vocabulary.ts')) return 'vocabulary';
+  
+  // Framer Motion is large, isolate it
+  if (id.includes('framer-motion')) return 'vendor-framer';
+  
+  // Other dependencies
+  if (id.includes('node_modules')) return 'vendor';
+}
+```
+
+**Result:**
+- Initial bundle: Core app code
+- `vocabulary.js`: ~600 terms, cached long-term
+- `vendor-framer.js`: Animation library
+- `vendor.js`: Other dependencies
+
+### Development vs Production
+
+- **Development**: HMR enabled, component tagging for debugging
+- **Production**: Bundle visualization, gzip/brotli analysis, minification
+
+## Future Architecture Considerations
+
+<Warning>
+Potential additions that would require architectural changes:
+</Warning>
+
+### Cloud Sync
+
+Adding optional cloud backup would require:
+- Authentication system (Firebase Auth, Supabase)
+- Conflict resolution for offline-first sync
+- Migration path from local-only storage
+- Privacy controls and data portability
+
+### User-Generated Content
+
+Allowing custom flashcard decks would need:
+- Content validation and sanitization
+- Import/export functionality
+- Deck management UI
+- Storage quota management
+
+### Collaborative Features
+
+Sharing progress or competing would require:
+- Backend API for leaderboards
+- Real-time updates (WebSockets)
+- User profiles and social features
+- Moderation tools
+
+## Design Philosophy
+
+<CardGroup cols={2}>
+  <Card title="Progressive Enhancement" icon="layer-group">
+    Start with core functionality (flashcards), add advanced features (SRS, achievements) progressively
+  </Card>
+  
+  <Card title="Zero Configuration" icon="magic">
+    Works out of the box - no setup, accounts, or configuration required
+  </Card>
+  
+  <Card title="Performance First" icon="bolt">
+    Every feature is evaluated for impact on load time and runtime performance
+  </Card>
+  
+  <Card title="Mobile Native" icon="mobile">
+    Touch gestures, native sharing, and mobile-optimized interactions
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+This architecture supports the core mission: help developers learn vocabulary fast, with minimal friction, anywhere.
+</Note>

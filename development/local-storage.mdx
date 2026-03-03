@@ -1,0 +1,353 @@
+---
+title: Local Storage
+description: How Vocab Vault uses Capacitor Preferences for offline-first data persistence
+---
+
+## Overview
+
+Vocab Vault uses **Capacitor Preferences** for all local data storage, enabling offline-first functionality across web, iOS, and Android. All user progress, achievements, and spaced repetition data persist locally on the device.
+
+## Storage Technology
+
+### Capacitor Preferences
+
+```typescript
+import { Preferences } from '@capacitor/preferences';
+```
+
+Capacitor Preferences provides a simple key-value storage API that works consistently across all platforms:
+
+- **Web:** `localStorage`
+- **iOS:** `UserDefaults`
+- **Android:** `SharedPreferences`
+
+**Documentation:** https://capacitorjs.com/docs/apis/preferences
+
+## Storage Keys
+
+All data is stored under six primary keys:
+
+```typescript
+const STORAGE_KEY = 'vocabVaultProgress';      // Classic mode progress
+const STREAK_KEY = 'vocabVaultStreak';         // Streak data
+const ELI5_KEY = 'vocabVaultEli5Mode';         // ELI5 mode toggle
+const ACHIEVEMENTS_KEY = 'vocabVaultAchievements'; // Unlocked achievements
+const STATS_KEY = 'vocabVaultStats';           // User statistics
+const SRS_KEY = 'vocabVaultSRS';               // Spaced repetition data
+```
+
+**Location:** `/src/hooks/useProgress.ts:30-35`
+
+## Data Structures
+
+### Progress Data (Classic Mode)
+
+**Key:** `vocabVaultProgress`
+
+**Structure:**
+
+```typescript
+{
+  [termId: number]: 'known' | 'learning' | 'unseen'
+}
+```
+
+**Example:**
+
+```json
+{
+  "1": "known",
+  "2": "learning",
+  "5": "known",
+  "12": "learning"
+}
+```
+
+Maps term IDs to their learning status. Only tracks terms that have been seen (unseen terms are omitted).
+
+### Streak Data
+
+**Key:** `vocabVaultStreak`
+
+**Structure:**
+
+```typescript
+interface StreakData {
+  streak: number;
+  lastStudyDate: string | null;
+}
+```
+
+**Example:**
+
+```json
+{
+  "streak": 7,
+  "lastStudyDate": "2026-03-03"
+}
+```
+
+Tracks consecutive days of studying using local date keys (YYYY-MM-DD format in device timezone).
+
+**Location:** `/src/hooks/useProgress.ts:25-28`
+
+### ELI5 Mode
+
+**Key:** `vocabVaultEli5Mode`
+
+**Structure:** Boolean
+
+**Example:**
+
+```json
+true
+```
+
+Stores whether the user prefers simplified "Explain Like I'm 5" definitions.
+
+### Achievements
+
+**Key:** `vocabVaultAchievements`
+
+**Structure:** Array of achievement IDs
+
+**Example:**
+
+```json
+[
+  "hello_world",
+  "streak_3",
+  "master_foundation",
+  "vibe_check"
+]
+```
+
+Only stores unlocked achievement IDs. All achievement metadata comes from the static `ACHIEVEMENTS` array.
+
+### User Statistics
+
+**Key:** `vocabVaultStats`
+
+**Structure:**
+
+```typescript
+{
+  totalCardsViewed?: number;
+  logoClicks?: number;
+}
+```
+
+**Example:**
+
+```json
+{
+  "totalCardsViewed": 127,
+  "logoClicks": 3
+}
+```
+
+Tracks global user statistics used for achievement conditions and analytics.
+
+**Location:** `/src/hooks/useProgress.ts:68-71`
+
+### SRS Data (Spaced Repetition)
+
+**Key:** `vocabVaultSRS`
+
+**Structure:**
+
+```typescript
+interface SRSData {
+  cards: Record<number, SRSCard>;
+  version: number;
+}
+```
+
+**Example:**
+
+```json
+{
+  "version": 1,
+  "cards": {
+    "1": {
+      "termId": 1,
+      "easeFactor": 2.5,
+      "interval": 6,
+      "repetitions": 2,
+      "nextReviewDate": "2026-03-09",
+      "lastReviewDate": "2026-03-03",
+      "quality": 4
+    },
+    "5": {
+      "termId": 5,
+      "easeFactor": 2.36,
+      "interval": 1,
+      "repetitions": 1,
+      "nextReviewDate": "2026-03-04",
+      "lastReviewDate": "2026-03-03",
+      "quality": 3
+    }
+  }
+}
+```
+
+Stores SM-2 algorithm data for each reviewed card. See [Progress Tracking](/development/progress-tracking) for details.
+
+**Location:** `/src/lib/sm2.ts:24-27`
+
+## Storage Operations
+
+### Reading Data
+
+```typescript
+const { value } = await Preferences.get({ key: STORAGE_KEY });
+const progress = JSON.parse(value || '{}');
+```
+
+All data is stored as JSON strings and must be parsed after retrieval.
+
+**Location:** `/src/hooks/useProgress.ts:54-75`
+
+### Writing Data
+
+```typescript
+await Preferences.set({ 
+  key: STORAGE_KEY, 
+  value: JSON.stringify(newProgress) 
+});
+```
+
+All writes serialize data to JSON before storage.
+
+**Location:** `/src/hooks/useProgress.ts:143`
+
+### Removing Data
+
+```typescript
+await Preferences.remove({ key: STORAGE_KEY });
+```
+
+Used during progress reset operations.
+
+**Location:** `/src/hooks/useProgress.ts:293-297`
+
+## Safe JSON Parsing
+
+The app uses a `safeJsonParse` utility to handle corrupted or missing data gracefully:
+
+```typescript
+import { safeJsonParse } from '@/lib/safeJson';
+
+const progress = safeJsonParse(stored, {});
+```
+
+This returns the default value if parsing fails, preventing crashes from corrupted storage.
+
+**Location:** `/src/hooks/useProgress.ts:56`
+
+## Data Loading Flow
+
+1. **Mount:** `useProgress` hook initializes
+2. **Load:** All six storage keys are read in parallel
+3. **Parse:** JSON strings are parsed with fallback defaults
+4. **Set State:** React state is updated with loaded data
+5. **Mark Loaded:** `isLoaded` flag set to `true`
+
+```typescript
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      const { value: stored } = await Preferences.get({ key: STORAGE_KEY });
+      setProgress(safeJsonParse(stored, {}));
+
+      const { value: streakStored } = await Preferences.get({ key: STREAK_KEY });
+      const streakData = safeJsonParse<StreakData>(streakStored, { streak: 0, lastStudyDate: null });
+      setStreak(streakData.streak);
+
+      // ... load other keys
+
+      setIsLoaded(true);
+    } catch {
+      setIsLoaded(true);
+    }
+  };
+  loadData();
+}, []);
+```
+
+**Location:** `/src/hooks/useProgress.ts:52-83`
+
+## Write-Through Cache Pattern
+
+The app uses a **write-through cache** pattern:
+
+1. Update React state immediately (optimistic UI)
+2. Persist to Preferences asynchronously
+3. No confirmation needed (fire-and-forget)
+
+This ensures instant UI updates while maintaining data persistence.
+
+```typescript
+const markTerm = useCallback(async (termId: number, status: TermStatus) => {
+  const newProgress = { ...progress, [termId]: status };
+  setProgress(newProgress); // Immediate UI update
+  await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(newProgress) }); // Async persist
+}, [progress]);
+```
+
+**Location:** `/src/hooks/useProgress.ts:140-147`
+
+## Storage Limits
+
+Capacitor Preferences has generous limits:
+
+- **Web (localStorage):** ~5-10 MB per domain
+- **iOS (UserDefaults):** No practical limit
+- **Android (SharedPreferences):** No practical limit
+
+Vocab Vault's data (500 terms + SRS data + achievements) totals < 100 KB, well within all limits.
+
+## Privacy & Security
+
+- **No server:** All data stays on device
+- **No analytics:** No tracking or telemetry
+- **No sync:** Data never leaves the device
+- **No accounts:** No authentication or cloud storage
+
+This ensures complete privacy and offline functionality.
+
+## Reset Functionality
+
+Users can reset all progress, which clears all six storage keys:
+
+```typescript
+const resetProgress = useCallback(async () => {
+  setProgress({});
+  setStreak(0);
+  setUnlockedAchievements([]);
+  setTotalCardsViewed(0);
+  setLogoClicks(0);
+  setSrsData({ cards: {}, version: 1 });
+  
+  await Preferences.remove({ key: STORAGE_KEY });
+  await Preferences.remove({ key: STREAK_KEY });
+  await Preferences.remove({ key: ACHIEVEMENTS_KEY });
+  await Preferences.remove({ key: STATS_KEY });
+  await Preferences.remove({ key: SRS_KEY });
+}, []);
+```
+
+**Location:** `/src/hooks/useProgress.ts:286-298`
+
+## Migration Strategy
+
+The `version` field in `SRSData` supports future schema migrations:
+
+```typescript
+interface SRSData {
+  cards: Record<number, SRSCard>;
+  version: number; // Currently 1
+}
+```
+
+If the SRS algorithm changes, the app can detect old versions and migrate data automatically.

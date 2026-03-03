@@ -1,0 +1,316 @@
+---
+title: Installation
+description: Install Vocab Vault as a web app or native Android application
+---
+
+## Access options
+
+Vocab Vault works on any device with a modern web browser and offers native Android support through Capacitor.
+
+<CardGroup cols={2}>
+  <Card title="Web app" icon="globe">
+    Instant access, no installation required
+  </Card>
+  <Card title="Android app" icon="android">
+    Native mobile experience with offline support
+  </Card>
+</CardGroup>
+
+## Web app
+
+The easiest way to use Vocab Vault is through your web browser.
+
+<Steps>
+  <Step title="Open in your browser">
+    Navigate to your Vocab Vault deployment URL in any modern web browser:
+    
+    - Chrome (recommended)
+    - Firefox
+    - Safari
+    - Edge
+    
+    <Note>
+      The web app requires JavaScript to be enabled. All vocabulary data and progress is stored locally in your browser.
+    </Note>
+  </Step>
+  
+  <Step title="Add to home screen (optional)">
+    For a native app-like experience, add Vocab Vault to your home screen:
+    
+    **On iOS (Safari):**
+    1. Tap the Share button
+    2. Scroll down and tap "Add to Home Screen"
+    3. Name it "Vocab Vault" and tap "Add"
+    
+    **On Android (Chrome):**
+    1. Tap the three-dot menu
+    2. Select "Add to Home Screen"
+    3. Name it "Vocab Vault" and tap "Add"
+    
+    This creates an icon on your home screen that opens the app in fullscreen mode.
+  </Step>
+  
+  <Step title="Start learning">
+    Once loaded, all vocabulary is cached locally. You can use the app offline after the initial load.
+  </Step>
+</Steps>
+
+## Android app
+
+Vocab Vault offers a native Android app built with Capacitor for the best mobile experience.
+
+### Requirements
+
+- Android 5.0 (API level 21) or higher
+- Approximately 20MB of storage space
+
+### Installation methods
+
+<Tabs>
+  <Tab title="From APK">
+    <Steps>
+      <Step title="Download the APK">
+        Download the latest APK from the [GitHub releases page](https://github.com/jackdog668/vibe-vocab/releases).
+        
+        <Warning>
+          Only download APKs from the official GitHub repository to ensure you're getting the authentic app.
+        </Warning>
+      </Step>
+      
+      <Step title="Enable unknown sources">
+        If this is your first time installing from an APK:
+        
+        1. Open **Settings** on your Android device
+        2. Navigate to **Security** or **Apps**
+        3. Enable **Install unknown apps** or **Unknown sources** for your browser or file manager
+        
+        <Note>
+          This setting allows installation of apps from sources other than the Play Store. You can disable it after installation.
+        </Note>
+      </Step>
+      
+      <Step title="Install the APK">
+        1. Locate the downloaded APK file
+        2. Tap on the file to begin installation
+        3. Review the permissions
+        4. Tap **Install**
+        5. Wait for installation to complete
+        6. Tap **Open** or find the Vocab Vault icon in your app drawer
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Build from source">
+    <Steps>
+      <Step title="Clone the repository">
+        ```bash
+        git clone https://github.com/jackdog668/vibe-vocab.git
+        cd vibe-vocab
+        ```
+      </Step>
+      
+      <Step title="Install dependencies">
+        ```bash
+        npm install
+        ```
+      </Step>
+      
+      <Step title="Build the web assets">
+        ```bash
+        npm run build
+        ```
+      </Step>
+      
+      <Step title="Sync with Capacitor">
+        ```bash
+        npx cap sync android
+        ```
+      </Step>
+      
+      <Step title="Open in Android Studio">
+        ```bash
+        npx cap open android
+        ```
+        
+        This opens the Android project in Android Studio where you can:
+        - Build the APK
+        - Run on an emulator
+        - Deploy to a connected device
+      </Step>
+      
+      <Step title="Build the APK">
+        In Android Studio:
+        1. Select **Build** → **Build Bundle(s) / APK(s)** → **Build APK(s)**
+        2. Wait for the build to complete
+        3. Find the APK in `android/app/build/outputs/apk/debug/`
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+### App permissions
+
+The Vocab Vault Android app requests minimal permissions:
+
+| Permission | Purpose |
+|------------|----------|
+| **Internet** | Optional: for sharing achievements or checking for updates |
+| **Storage** | Saving vocabulary progress and user settings locally |
+
+<Note>
+  All vocabulary data and progress is stored locally on your device. No data is sent to external servers.
+</Note>
+
+## System requirements
+
+### Web app
+
+- Modern web browser (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
+- JavaScript enabled
+- ~10MB of local storage space
+
+### Android app
+
+- Android 5.0 (Lollipop, API level 21) or higher
+- ~20MB of storage space
+- Recommended: Android 8.0+ for best performance
+
+## Data and privacy
+
+<AccordionGroup>
+  <Accordion title="Where is my data stored?">
+    All your progress, settings, and mastered vocabulary are stored locally on your device using browser local storage (web app) or Capacitor Preferences (Android app).
+    
+    **This means:**
+    - No account or login required
+    - No data sent to external servers
+    - Your progress stays on your device
+    - Clearing browser data or app data will reset your progress
+  </Accordion>
+  
+  <Accordion title="Can I sync across devices?">
+    Currently, Vocab Vault does not sync progress across devices. Each installation maintains its own local progress.
+    
+    If you use both the web app and Android app, they will track progress separately.
+  </Accordion>
+  
+  <Accordion title="What happens if I clear app data?">
+    Clearing app data or browser storage will reset your progress, including:
+    - Mastered vocabulary
+    - Daily streak
+    - Unlocked achievements
+    - Settings and preferences
+    
+    <Warning>
+      There is no cloud backup, so cleared data cannot be recovered.
+    </Warning>
+  </Accordion>
+  
+  <Accordion title="Is an internet connection required?">
+    **After initial load: No**
+    
+    The web app caches all vocabulary after the first visit. The Android app includes all vocabulary in the installation.
+    
+    You can use Vocab Vault completely offline for studying. Internet is only needed for:
+    - Initial web app load
+    - Downloading updates
+    - Optional: Sharing achievements (if implemented)
+  </Accordion>
+</AccordionGroup>
+
+## Updating
+
+### Web app
+
+The web app checks for updates automatically. Refresh your browser to get the latest version.
+
+### Android app
+
+1. Download the latest APK from GitHub releases
+2. Install over your existing installation
+3. Your progress will be preserved during updates
+
+<Note>
+  Always back up your progress data if possible before major updates, though the app attempts to preserve local data during updates.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="App won't load or shows blank screen">
+    **Web app:**
+    - Clear browser cache and reload
+    - Try a different browser
+    - Disable browser extensions temporarily
+    - Check JavaScript is enabled
+    
+    **Android app:**
+    - Clear app cache in Settings → Apps → Vocab Vault → Storage → Clear Cache
+    - Restart the app
+    - Reinstall if issues persist
+  </Accordion>
+  
+  <Accordion title="Lost progress after update">
+    Progress should persist through updates, but if lost:
+    
+    - Check if you're using the same browser/device
+    - Verify you didn't clear browser data or app storage
+    - Unfortunately, without cloud sync, lost local data cannot be recovered
+  </Accordion>
+  
+  <Accordion title="Can't install Android APK">
+    - Verify "Unknown sources" or "Install unknown apps" is enabled
+    - Ensure you have enough storage space (~20MB)
+    - Try downloading the APK again (may have been corrupted)
+    - Check that your Android version is 5.0 or higher
+  </Accordion>
+  
+  <Accordion title="App is slow or laggy">
+    - Close other apps to free up memory
+    - Restart your device
+    - Clear app cache (this won't delete progress)
+    - Ensure you're running Android 8.0+ for optimal performance
+  </Accordion>
+</AccordionGroup>
+
+## Source code
+
+Vocab Vault is open source. View and contribute to the code:
+
+<Card
+  title="View on GitHub"
+  icon="github"
+  href="https://github.com/jackdog668/vibe-vocab"
+>
+  Explore the source code, report issues, or contribute improvements
+</Card>
+
+## Tech stack
+
+Vocab Vault is built with:
+
+- **React** (v18.3) - UI framework
+- **TypeScript** (v5.8) - Type safety
+- **Vite** (v5.4) - Build tool and dev server
+- **Tailwind CSS** (v3.4) - Styling
+- **Capacitor** (v8.0) - Native mobile wrapper
+- **Framer Motion** (v12.29) - Animations
+- **shadcn/ui** - Component library
+
+<Note>
+  For development setup and contribution guidelines, see the [Development Overview](/development/overview) or [Contributing Guide](/development/contributing).
+</Note>
+
+## Need help?
+
+If you encounter issues not covered here:
+
+1. Check the [GitHub issues](https://github.com/jackdog668/vibe-vocab/issues) for similar problems
+2. Open a new issue with details about your device, OS version, and the problem
+3. Join the [Digital Alchemy Skool community](https://www.skool.com/digital-alchemy-7170) for support
+
+---
+
+<Tip>
+  Once installed, start with the [Quickstart guide](/quickstart) to begin learning vocabulary immediately.
+</Tip>

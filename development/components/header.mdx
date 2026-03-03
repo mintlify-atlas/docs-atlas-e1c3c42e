@@ -1,0 +1,354 @@
+---
+title: Header Component
+description: Application header with navigation, theme toggle, and user controls
+---
+
+The `Header` component is the main navigation bar for Vocab Vault, featuring theme switching, view mode controls, achievement tracking, and branding.
+
+## Features
+
+- **Logo & Branding**: Clickable logo with Digital Alchemy branding
+- **Theme Toggle**: Animated sun/moon toggle with smooth transitions
+- **View Mode Switcher**: Cycle between grid, carousel, and list views
+- **Daily Goal Tracker**: Visual progress indicator for daily study goals
+- **Achievements Button**: Access trophy room
+- **Search Functionality**: Quick search across all terms
+- **About/Profile**: User profile and app information
+- **External Links**: Link to Digital Alchemy Skool community
+
+## Props
+
+<ParamField path="streak" type="number">
+  Current study streak in days (currently unused in UI)
+</ParamField>
+
+<ParamField path="viewMode" type="'grid' | 'list' | 'carousel'" default="'grid'">
+  Current view mode for category display. Determines which icon is shown in the view toggle button.
+</ParamField>
+
+<ParamField path="onCycleView" type="() => void">
+  Callback function to cycle through view modes. When provided, displays the view toggle button.
+</ParamField>
+
+<ParamField path="onLogoClick" type="() => void">
+  Callback function triggered when logo is clicked. Typically used to return to home screen.
+</ParamField>
+
+<ParamField path="onOpenAchievements" type="() => void">
+  Callback function to open achievements modal. When provided, displays the trophy button.
+</ParamField>
+
+<ParamField path="onOpenAbout" type="() => void">
+  Callback function to open about/profile modal. When provided, displays the profile button.
+</ParamField>
+
+<ParamField path="onSearch" type="() => void">
+  Callback function to open search interface. When provided, displays the search button.
+</ParamField>
+
+<ParamField path="onOpenGoals" type="() => void">
+  Callback function to open daily goals modal. When provided, displays the goal progress indicator.
+</ParamField>
+
+<ParamField path="dailyGoalProgress" type="{ current: number; target: number; complete: boolean }">
+  Daily goal progress data:
+  - `current`: Number of cards studied today
+  - `target`: Daily goal target
+  - `complete`: Whether goal has been reached
+</ParamField>
+
+## Usage Example
+
+```tsx
+import { Header } from '@/components/Header';
+import { useState } from 'react';
+
+function App() {
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'carousel'>('grid');
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  
+  const cycleView = () => {
+    const modes: ('grid' | 'list' | 'carousel')[] = ['grid', 'carousel', 'list'];
+    const currentIndex = modes.indexOf(viewMode);
+    setViewMode(modes[(currentIndex + 1) % modes.length]);
+  };
+
+  return (
+    <>
+      <Header
+        viewMode={viewMode}
+        onCycleView={cycleView}
+        onLogoClick={() => window.location.href = '/'}
+        onOpenAchievements={() => setShowAchievements(true)}
+        onOpenAbout={() => console.log('Open about')}
+        onSearch={() => setShowSearch(true)}
+        onOpenGoals={() => console.log('Open goals')}
+        dailyGoalProgress={{
+          current: 15,
+          target: 20,
+          complete: false
+        }}
+      />
+      {/* Your app content */}
+    </>
+  );
+}
+```
+
+## Header Sections
+
+### Left Section - Logo & Branding
+
+```tsx
+<div className="flex items-center gap-3 cursor-pointer">
+  <div className="relative w-8 h-8 rounded-lg">
+    <img src="/logo-da.jpg" alt="Digital Alchemy Logo" />
+  </div>
+  <div className="flex flex-col">
+    <h1 className="font-display font-black text-lg">
+      VOCAB<span className="text-muted-foreground">/</span>VAULT
+    </h1>
+    <span className="text-[10px] uppercase">Digital Alchemy</span>
+  </div>
+</div>
+```
+
+- Clickable logo image
+- App name with stylized separator
+- Branding subtitle
+
+### Right Section - Controls
+
+Contains multiple interactive buttons (left to right):
+
+1. **Skool Link** (desktop only)
+2. **Version Number** (desktop only)
+3. **Search Button**
+4. **Daily Goal Progress**
+5. **Achievements Trophy**
+6. **View Mode Toggle**
+7. **Theme Toggle**
+8. **Profile Button**
+
+## Theme Toggle
+
+Animated sun/moon toggle with sophisticated animations:
+
+```tsx
+const toggleTheme = () => {
+  setIsAnimating(true);
+  setTimeout(() => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  }, 150);
+  setTimeout(() => {
+    setIsAnimating(false);
+  }, 600);
+};
+```
+
+### Dark Mode (Moon Icon)
+
+```tsx
+<motion.div
+  className="w-4 h-4 bg-slate-100 rounded-full"
+  style={{ boxShadow: 'inset -2px -1px 0px 0px #94a3b8' }}
+/>
+```
+
+Crescent moon with inset shadow effect.
+
+### Light Mode (Sun Icon)
+
+Animated sun with 8 rotating rays:
+
+```tsx
+const sunRays = [0, 45, 90, 135, 180, 225, 270, 315];
+
+{sunRays.map((rotation, i) => (
+  <motion.div
+    className="w-0.5 h-1 bg-amber-300 rounded-full"
+    style={{
+      transformOrigin: '50% 10px',
+      rotate: `${rotation}deg`,
+    }}
+    initial={{ scaleY: 0 }}
+    animate={{ scaleY: 1 }}
+    transition={{ delay: i * 0.03, duration: 0.2 }}
+  />
+))}
+```
+
+Staggered ray appearance with rotation animation.
+
+## View Mode Toggle
+
+Cycles through three view modes with appropriate icons:
+
+```tsx
+<span className="material-icons text-lg">
+  {viewMode === 'grid' ? 'grid_view' : 
+   viewMode === 'carousel' ? 'view_carousel' : 
+   'view_list'}
+</span>
+```
+
+- **Grid**: `grid_view` icon
+- **Carousel**: `view_carousel` icon
+- **List**: `view_list` icon
+
+## Daily Goal Progress
+
+Shows current progress toward daily study goal:
+
+```tsx
+<motion.button
+  className={dailyGoalProgress.complete
+    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+    : 'bg-card border border-muted text-muted-foreground'
+  }
+>
+  <span className="material-icons">
+    {dailyGoalProgress.complete ? 'check_circle' : 'flag'}
+  </span>
+  <span>{dailyGoalProgress.current}/{dailyGoalProgress.target}</span>
+</motion.button>
+```
+
+- **Incomplete**: Gray with flag icon
+- **Complete**: Green with check circle icon
+- Shows "current/target" format (e.g., "15/20")
+
+## Search Button
+
+Simple search icon button:
+
+```tsx
+<motion.button
+  onClick={onSearch}
+  className="w-8 h-8 bg-card border border-muted hover:border-foreground rounded-full"
+  aria-label="Search all terms"
+>
+  <span className="material-icons text-lg">search</span>
+</motion.button>
+```
+
+## Achievements Trophy
+
+Golden trophy icon for accessing achievements:
+
+```tsx
+<motion.button
+  onClick={onOpenAchievements}
+  className="text-yellow-500 hover:text-yellow-600"
+  aria-label="Open Achievements"
+>
+  <span className="material-icons text-lg">emoji_events</span>
+</motion.button>
+```
+
+## Profile Button
+
+User profile icon:
+
+```tsx
+<motion.button
+  onClick={onOpenAbout}
+  className="w-8 h-8 bg-foreground rounded-full"
+  aria-label="About"
+>
+  <span className="material-icons text-base text-background">person</span>
+</motion.button>
+```
+
+Inverted colors (foreground background, background text) to stand out.
+
+## Sticky Positioning
+
+Header stays at top of viewport:
+
+```tsx
+className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b"
+style={{
+  paddingTop: 'calc(0.5rem + var(--safe-area-top))',
+  paddingBottom: '0.5rem'
+}}
+```
+
+- Sticky positioning with high z-index
+- Semi-transparent background with backdrop blur
+- Safe area insets for mobile notches
+- Bottom border for visual separation
+
+## Responsive Behavior
+
+### Desktop (sm and up)
+
+- Shows Skool branding link
+- Shows version number
+- All buttons visible
+
+### Mobile
+
+- Hides Skool branding
+- Hides version number
+- Compact button layout
+- Touch-optimized sizes
+
+## Animations
+
+All interactive elements use Framer Motion:
+
+```tsx
+whileHover={{ scale: 1.05 }}
+whileTap={{ scale: 0.95 }}
+```
+
+- Hover: Slight enlargement (105%)
+- Tap: Slight shrink (95%)
+- Smooth spring physics
+
+## Hydration Safety
+
+Theme toggle prevents hydration mismatches:
+
+```tsx
+const [mounted, setMounted] = useState(false);
+
+useEffect(() => {
+  setMounted(true);
+}, []);
+
+{mounted && (
+  <AnimatePresence mode="wait">
+    {/* Theme icon */}
+  </AnimatePresence>
+)}
+```
+
+Only renders theme-dependent content after client-side mount.
+
+## External Links
+
+Skool community link (desktop only):
+
+```tsx
+<a
+  href="https://www.skool.com/digital-alchemy-7170"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="hidden sm:flex items-center gap-1.5"
+>
+  <span className="material-icons text-sm text-amber-500">school</span>
+  <span className="uppercase tracking-wider">Digital Alchemy Skool</span>
+</a>
+```
+
+- Opens in new tab
+- Security attributes (`noopener noreferrer`)
+- Amber school icon
+- Hidden on mobile devices
+
+## Source Code Reference
+
+See the full implementation in `/workspace/source/src/components/Header.tsx`

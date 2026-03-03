@@ -1,0 +1,288 @@
+---
+title: Achievements System
+description: Unlock 30+ achievements as you master vocabulary categories, build streaks, and discover hidden secrets
+---
+
+Vocab Vault features a comprehensive achievement system with **over 30 unlockable achievements** that reward your learning journey.
+
+## Achievement Categories
+
+Achievements are organized into several categories:
+
+### Category Mastery
+
+Complete all terms in a category to unlock its achievement:
+
+<CardGroup cols={3}>
+  <Card title="Foundation Setter" icon="building">
+    Master all Foundation category terms
+  </Card>
+  <Card title="API Wizard" icon="code">
+    Master all API category terms
+  </Card>
+  <Card title="Code Warrior" icon="terminal">
+    Master all Code category terms
+  </Card>
+  <Card title="Cloud Commander" icon="cloud">
+    Master all Cloud/Development terms
+  </Card>
+  <Card title="Design Guru" icon="palette">
+    Master all UI/UX category terms
+  </Card>
+  <Card title="Money Maker" icon="dollar-sign">
+    Master all Business category terms
+  </Card>
+  <Card title="QA Engineer" icon="bug">
+    Master all Testing category terms
+  </Card>
+  <Card title="System Architect" icon="sitemap">
+    Master all Architecture terms
+  </Card>
+  <Card title="Growth Hacker" icon="chart-line">
+    Master all SEO category terms
+  </Card>
+  <Card title="Data Scientist" icon="chart-bar">
+    Master all Analytics terms
+  </Card>
+  <Card title="White Hat" icon="shield">
+    Master all Security category terms
+  </Card>
+  <Card title="App Developer" icon="mobile">
+    Master all Mobile category terms
+  </Card>
+  <Card title="Citizen Developer" icon="wrench">
+    Master all No-Code category terms
+  </Card>
+</CardGroup>
+
+### Streak Achievements
+
+Build consistent study habits and unlock streak achievements:
+
+<Steps>
+  <Step title="Heating Up" icon="fire">
+    Reach a **3-day** study streak
+  </Step>
+  <Step title="On Fire" icon="fire-flame-curved">
+    Reach a **7-day** study streak
+  </Step>
+  <Step title="Monthly Master" icon="calendar">
+    Reach a **30-day** study streak
+  </Step>
+</Steps>
+
+### Vocabulary Milestones
+
+Celebrate your growing knowledge:
+
+<CardGroup cols={2}>
+  <Card title="Hello World" icon="hand-wave">
+    Master your very first term. Your journey begins!
+  </Card>
+  <Card title="The Polyglot" icon="globe">
+    Master at least 1 term from 5 different categories
+  </Card>
+  <Card title="Vocab Viking" icon="ship">
+    Know **100 terms** total
+  </Card>
+  <Card title="Vibe Coding God" icon="star">
+    Know **500 terms** total. You are legendary.
+  </Card>
+</CardGroup>
+
+## Hidden Achievements
+
+Discover secret achievements by exploring the app:
+
+<Warning>
+  Spoilers ahead! Hidden achievements won't appear in your trophy room until unlocked.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Vibe Check Passed" icon="music">
+    Click the logo 5 times to find the secret vibe switch
+  </Accordion>
+  <Accordion title="Rage Clicker" icon="mouse-pointer">
+    Click the logo 50 times. Are you okay?
+  </Accordion>
+  <Accordion title="The Digital Alchemist" icon="flask">
+    Know 550 terms. You have transmuted code into gold.
+  </Accordion>
+  <Accordion title="Early Bird" icon="sunrise">
+    Study between 5AM - 8AM. Dedication!
+  </Accordion>
+  <Accordion title="Night Owl" icon="moon">
+    Study way past bedtime (12AM - 4AM)
+  </Accordion>
+  <Accordion title="Weekend Warrior" icon="calendar-days">
+    Study on a Saturday or Sunday
+  </Accordion>
+  <Accordion title="Deployment Friday" icon="rocket">
+    Study on a Friday. Brave soul.
+  </Accordion>
+  <Accordion title="Window Shopper" icon="store">
+    View 50 cards but master ZERO. Just looking?
+  </Accordion>
+  <Accordion title="Ghost in the Shell" icon="robot">
+    Master 10 AI terms. Are you even human?
+  </Accordion>
+</AccordionGroup>
+
+### Easter Egg Achievements
+
+Extra hidden achievements with playful references:
+
+- **Trap's Ambush**: Master 10 Security terms
+- **Harlem's Shake**: Master 10 CSS terms (master of style)
+- **Nita's Library**: Master 10 Data terms
+- **Petra's Pillow**: Master 10 Architecture terms (so stable you can sleep on it)
+- **Donna's Empire**: Master 10 Business terms (business mogul)
+
+## How Achievements Work
+
+Achievements are checked dynamically based on your user statistics:
+
+```typescript
+export interface UserStats {
+  totalCardsViewed: number;
+  unlockedAchievements: string[];
+  categoryProgress: Record<string, number>;
+  streak: number;
+  logoClicks?: number;
+  lastStudyTime?: number;
+}
+```
+
+Each achievement has a condition function:
+
+```typescript
+{
+  id: 'streak_7',
+  title: 'On Fire',
+  description: 'Reach a 7-day study streak',
+  icon: 'whatshot',
+  condition: (stats) => stats.streak >= 7
+}
+```
+
+## Trophy Room
+
+View all achievements in the Trophy Room:
+
+- **Unlocked achievements** appear in full color with vibrant gradients
+- **Locked achievements** appear grayed out and partially visible
+- **Hidden achievements** show as "???" until unlocked
+- Track your completion percentage
+
+<Tip>
+  Unlocked achievements are sorted to the top of the list so you can admire your collection!
+</Tip>
+
+## Dynamic Thresholds
+
+Category mastery achievements adapt to the actual term count:
+
+```typescript
+function catSize(id: CategoryId): number {
+  return getTermsByCategory(id).length;
+}
+
+{
+  id: 'master_foundation',
+  title: 'Foundation Setter',
+  description: 'Master all terms in the Foundation category',
+  icon: 'architecture',
+  category: 'foundation',
+  condition: (stats) => (stats.categoryProgress['foundation'] || 0) >= catSize('foundation')
+}
+```
+
+This means achievements automatically adjust if vocabulary is added or removed.
+
+## Achievement Notifications
+
+When you unlock a new achievement:
+
+1. A celebration notification appears
+2. The achievement is saved to your profile
+3. Your Trophy Room updates
+4. The achievement appears with its unique icon and description
+
+<Frame>
+  <img src="/images/achievement-unlock.png" alt="Achievement unlock notification" />
+</Frame>
+
+## Implementation Details
+
+Achievements are defined in `/src/data/achievements.ts`:
+
+```typescript
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category?: CategoryId;
+  isHidden?: boolean;
+  condition: (stats: UserStats) => boolean;
+}
+```
+
+The `useProgress` hook checks achievements automatically:
+
+```typescript
+// Check achievements after marking a term
+const checkAchievements = useCallback(async (
+  currentProgress: Progress,
+  currentStreak: number,
+  currentViews: number,
+  currentClicks: number,
+  currentUnlocked: string[]
+) => {
+  const stats = getCurrentStats(currentProgress, currentStreak, currentViews, currentClicks, currentUnlocked);
+  const newUnlocked: string[] = [];
+  
+  ACHIEVEMENTS.forEach(achievement => {
+    if (!currentUnlocked.includes(achievement.id)) {
+      if (achievement.condition(stats)) {
+        newUnlocked.push(achievement.id);
+      }
+    }
+  });
+  
+  if (newUnlocked.length > 0) {
+    // Save and notify user
+  }
+}, [getCurrentStats]);
+```
+
+## Tips for Completionists
+
+<CardGroup cols={2}>
+  <Card title="Study at different times" icon="clock">
+    Unlock time-based achievements by studying at various hours
+  </Card>
+  <Card title="Explore all categories" icon="grid">
+    Don't focus on just one—spread your learning across categories
+  </Card>
+  <Card title="Click everything" icon="cursor">
+    Hidden achievements often reward curiosity and exploration
+  </Card>
+  <Card title="Build long streaks" icon="fire">
+    Consistency unlocks the most prestigious achievements
+  </Card>
+</CardGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Streaks" icon="fire" href="/learning/streaks">
+    Build daily practice streaks
+  </Card>
+  <Card title="Daily Goals" icon="flag" href="/learning/daily-goals">
+    Set and track daily study targets
+  </Card>
+  <Card title="Spaced Repetition" icon="brain" href="/learning/spaced-repetition">
+    Learn about the SRS algorithm
+  </Card>
+</CardGroup>

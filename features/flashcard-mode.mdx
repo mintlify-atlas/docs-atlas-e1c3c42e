@@ -1,0 +1,164 @@
+---
+title: Flashcard Mode
+description: Interactive flashcard system with swipe gestures, animations, and audio support for effective vocabulary learning.
+---
+
+Flashcard Mode is the core learning experience in Vocab Vault. Each card features smooth animations, swipe gestures, and optional text-to-speech for an engaging study session.
+
+## How It Works
+
+Flashcard Mode displays vocabulary terms one at a time with an interactive card interface:
+
+1. **Front of Card**: Shows the vocabulary term in large text
+2. **Back of Card**: Reveals the definition and optional visual examples
+3. **Swipe Gestures**: Natural interactions to review and mark progress
+4. **Audio Support**: Text-to-speech for pronunciation help
+
+## Card Interactions
+
+### Flipping Cards
+
+- **Click/Tap** anywhere on the card to flip between term and definition
+- **Swipe Left** to flip the card and see the definition
+- **Keyboard Shortcut**: Space bar to flip (when shortcuts are enabled)
+
+### Marking Progress
+
+- **Swipe Right** (past threshold of 120px) to mark as "Known" and advance
+- Green glow appears as you swipe right, indicating positive progress
+- Blue glow appears when swiping left to flip
+- Cards return to center if you don't swipe far enough
+
+<Tip>
+The swipe threshold is intentionally set higher (120px) to prevent accidental marks. This ensures you're making deliberate progress decisions.
+</Tip>
+
+## Text-to-Speech
+
+If your device supports speech synthesis, you'll see a speaker icon on each card:
+
+- **Front Side**: Speaks the vocabulary term
+- **Back Side**: Speaks both the term and full definition
+- **Click the speaker icon** to play or stop audio
+- Icon pulses when speaking to provide visual feedback
+
+```tsx
+// Speech is available on most modern browsers
+const { speakTerm, isSpeaking, isSupported } = useSpeech();
+
+handleSpeak = () => {
+  if (isSpeaking) {
+    stop();
+  } else {
+    speakTerm(term.term, isFlipped ? term.definition : undefined);
+  }
+};
+```
+
+## Visual Examples
+
+Many terms include ASCII art visual examples that appear on the back of the card. These help illustrate concepts like:
+
+- UI layout patterns (Hero Section, Grid System)
+- CSS concepts (Padding vs Margin)
+- Code structures (Flexbox, CSS Grid)
+
+Example from a UI/UX card:
+
+```
+┌────────────────────┐
+│   BIG HEADLINE     │
+│  some subtext here │
+│     [ Button ]     │
+└────────────────────┘
+```
+
+## Card Design Features
+
+### Front Design
+- Category-specific color background (`bg-category-yellow`, `bg-category-blue`, etc.)
+- Large, bold term display with responsive text sizing
+- Card number indicator (e.g., "Term #01")
+- Decorative elements and visual depth with borders and shadows
+- Bottom instruction bar: "← Flip · Swipe → Got it"
+
+### Back Design
+- Clean white/card background for readability
+- Definition badge (shows "ELI5" when in simplified mode)
+- Structured layout with definition and optional example section
+- "Visual Schema" section for ASCII examples
+
+## ELI5 Mode Integration
+
+When ELI5 Mode is enabled, flashcards automatically show simplified "Explain Like I'm 5" definitions instead of technical ones:
+
+```tsx
+eli5Mode={eli5Mode}
+
+// On the back of the card:
+{eli5Mode && term.eli5Definition ? term.eli5Definition : term.definition}
+```
+
+See [ELI5 Mode](/features/eli5-mode) for more details.
+
+## Animation & Polish
+
+Flashcard Mode uses Framer Motion for smooth, professional animations:
+
+- **3D Flip Animation**: Cards rotate on the Y-axis with spring physics
+- **Drag Physics**: Elastic drag constraints with rotation feedback
+- **Opacity Transitions**: Cards fade during swipe gestures
+- **Glow Effects**: Dynamic colored glows based on swipe direction
+
+```tsx
+// Smooth 3D flip with spring animation
+<motion.div
+  animate={{ rotateY: isFlipped ? 180 : 0 }}
+  transition={{ type: "spring", stiffness: 260, damping: 20 }}
+  style={{ transformStyle: 'preserve-3d' }}
+/>
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Focus on Understanding">
+    Don't rush through cards. Take time to read the full definition and any visual examples. The swipe-right gesture should feel earned.
+  </Accordion>
+
+  <Accordion title="Use Audio for Pronunciation">
+    If you're unsure how to pronounce a term, use the text-to-speech feature. Hearing the term helps with retention.
+  </Accordion>
+
+  <Accordion title="Review Before Marking">
+    Only swipe right to mark as "known" when you truly understand the term. It's okay to leave cards in "learning" status.
+  </Accordion>
+
+  <Accordion title="Leverage Visual Examples">
+    Pay attention to ASCII examples on the back of cards. These visual representations help cement abstract concepts.
+  </Accordion>
+</AccordionGroup>
+
+## Tips
+
+- **Swipe Threshold**: The 120px threshold prevents accidents - you need to swipe deliberately
+- **Double-Check**: If you accidentally flip a card, just click/tap again to return to the front
+- **Progress Tracking**: Swipe-right progress is automatically saved and tracked in [Progress Tracking](/features/progress-tracking)
+- **Category Colors**: Each category has a unique color scheme to help you visually identify topics
+
+## Technical Implementation
+
+Flashcard cards use a ref-based API for external control:
+
+```tsx
+export interface FlashCardRef {
+  flip: () => void;
+}
+
+const cardRef = useRef<FlashCardRef>(null);
+
+// Programmatically flip from parent component
+cardRef.current?.flip();
+```
+
+This enables keyboard shortcuts and other external controls while keeping the component encapsulated.

@@ -1,0 +1,214 @@
+---
+title: Vocabulary Data
+description: How vocabulary terms are structured, categorized, and accessed
+---
+
+## Overview
+
+All vocabulary terms are stored in `/src/data/vocabulary.ts` as a static TypeScript array. The app contains 500+ tech terms organized into 24 categories, from foundational concepts to advanced topics like AI, security, and architecture.
+
+## Term Structure
+
+Each term follows the `Term` interface:
+
+```typescript
+export interface Term {
+  id: number;
+  term: string;
+  definition: string;
+  eli5Definition?: string;
+  category: string;
+  example?: string;
+}
+```
+
+### Example Terms
+
+**Simple Term:**
+
+```typescript
+{ 
+  id: 1, 
+  term: "Vibe Coding", 
+  definition: "Building apps by describing what you want to AI, instead of writing code yourself", 
+  eli5Definition: "Telling a robot what to build and it builds it for you - like magic!", 
+  category: "foundation" 
+}
+```
+
+**Term with ASCII Example:**
+
+```typescript
+{
+  id: 51,
+  term: "Hero Section",
+  definition: "The big, bold first thing people see on a page. Usually has a headline, subtext, and a button.",
+  eli5Definition: "The big welcome mat at the front door of your website",
+  category: "uiux",
+  example: `┌────────────────────┐
+│   BIG HEADLINE     │
+│  some subtext here │
+│     [ Button ]     │
+└────────────────────┘`
+}
+```
+
+**Location:** `/src/data/vocabulary.ts:39-1221`
+
+## Categories
+
+Terms are organized into 24 categories with visual metadata:
+
+```typescript
+export const categories = [
+  { 
+    id: "foundation", 
+    name: "Foundation", 
+    subtitle: "Core Concepts", 
+    icon: "architecture", 
+    abbrev: "FDN", 
+    colorClass: "bg-category-yellow" 
+  },
+  { 
+    id: "api", 
+    name: "APIs", 
+    subtitle: "Endpoints", 
+    icon: "integration_instructions", 
+    abbrev: "API", 
+    colorClass: "bg-category-gray" 
+  },
+  // ... 22 more categories
+] as const;
+```
+
+### Category List
+
+| Category | ID | Icon | Color Class |
+|----------|-------|------|-------------|
+| Foundation | `foundation` | architecture | bg-category-yellow |
+| APIs | `api` | integration_instructions | bg-category-gray |
+| Code & Files | `code` | code | bg-category-pink |
+| Development | `development` | laptop_mac | bg-category-blue |
+| Git | `git` | call_split | bg-category-olive |
+| Cloud Services | `firebase` | cloud_queue | bg-category-teal |
+| UI/UX | `uiux` | palette | bg-category-purple |
+| CSS | `css` | format_paint | bg-category-amber |
+| AI | `ai` | psychology | bg-category-green |
+| No-Code | `nocode` | widgets | bg-category-cyan |
+| Money/Business | `money` | attach_money | bg-category-rose |
+| Tools | `tools` | build | bg-category-indigo |
+| Shortcuts | `shortcuts` | keyboard | bg-category-coral |
+| Security | `security` | lock | bg-category-red |
+| Debugging | `debugging` | bug_report | bg-category-orange |
+| Analytics | `analytics` | insights | bg-category-lime |
+| Mobile | `mobile` | smartphone | bg-category-sky |
+| Data | `data` | storage | bg-category-violet |
+| SEO | `seo` | public | bg-category-fuchsia |
+| Testing | `testing` | fact_check | bg-category-emerald |
+| Architecture | `architecture` | domain | bg-category-slate |
+| Hosting | `hosting` | dns | bg-category-hosting |
+| AI Tools | `aitools` | smart_toy | bg-category-aitools |
+| Package & Build | `package` | inventory_2 | bg-category-package |
+
+**Location:** `/src/data/vocabulary.ts:10-35`
+
+## Category Type
+
+The `CategoryId` type is derived from the categories array:
+
+```typescript
+export type CategoryId = typeof categories[number]["id"];
+```
+
+This ensures TypeScript enforces valid category IDs throughout the codebase.
+
+**Location:** `/src/data/vocabulary.ts:37`
+
+## Accessing Vocabulary Data
+
+### Get All Terms
+
+```typescript
+import { terms } from '@/data/vocabulary';
+
+// All 500+ terms as an array
+const allTerms = terms;
+```
+
+### Get Terms by Category
+
+```typescript
+import { getTermsByCategory } from '@/data/vocabulary';
+
+const foundationTerms = getTermsByCategory('foundation');
+const apiTerms = getTermsByCategory('api');
+```
+
+### Get All Categories
+
+```typescript
+import { categories } from '@/data/vocabulary';
+
+categories.forEach(cat => {
+  console.log(cat.name); // "Foundation", "APIs", etc.
+});
+```
+
+## Term ID Range
+
+Terms are numbered sequentially:
+
+- **ID 1-10:** Foundation terms (Vibe Coding, PRD, MVP, etc.)
+- **ID 11-20:** API & Authentication terms
+- **ID 21-30:** Code & Files terms
+- **ID 31-40:** Development Environment terms
+- **ID 41-45:** Git-related terms
+- **ID 46-50:** Firebase/Cloud terms
+- **ID 51-100:** UI/UX Design terms with ASCII examples
+- **ID 101-125:** CSS/Styling terms with visual examples
+- **ID 126-145:** AI/Prompt Engineering terms
+- **ID 141-500+:** Additional categories (No-Code, Security, Mobile, etc.)
+
+## Data Characteristics
+
+### ASCII Art Examples
+
+Many UI/UX and CSS terms include ASCII art in the `example` field to visualize concepts:
+
+```typescript
+{
+  id: 60,
+  term: "Card",
+  definition: "A contained box with related info (image, title, description, button).",
+  eli5Definition: "A neat little box with a picture and words, like a baseball card",
+  category: "uiux",
+  example: `┌──────────┐
+│  image   │
+├──────────┤
+│ Title    │
+│ desc...  │
+│ [button] │
+└──────────┘`
+}
+```
+
+These render in monospace fonts to preserve alignment.
+
+### ELI5 Definitions
+
+Almost all terms include "Explain Like I'm 5" simplified definitions for beginners. Users can toggle between technical and simplified modes.
+
+**Technical:**
+> "A way for apps to talk to each other - like a waiter taking your order to the kitchen. Stands for Application Programming Interface."
+
+**ELI5:**
+> "A waiter that takes your order to the kitchen and brings back your food"
+
+## Static vs Dynamic Data
+
+Vocabulary data is **static** (hardcoded in TypeScript), while user progress is **dynamic** (stored in Capacitor Preferences).
+
+- **Static:** Term definitions, categories, achievement definitions
+- **Dynamic:** Which terms the user knows, streak count, SRS card data
+
+This separation allows the vocabulary database to be updated via app releases without affecting user progress.

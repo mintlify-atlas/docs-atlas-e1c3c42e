@@ -1,0 +1,426 @@
+---
+title: Achievement Components
+description: Achievement system with modal display and popup notifications
+---
+
+Vocab Vault includes two achievement-related components: `AchievementsModal` for viewing all achievements and `AchievementPopup` for celebrating newly unlocked achievements.
+
+## AchievementsModal
+
+A full-screen modal that displays all achievements in a trophy room interface.
+
+### Features
+
+- **Progress Tracking**: Visual progress bar showing unlocked/total achievements
+- **Smart Sorting**: Unlocked achievements appear first
+- **Hidden Achievements**: Mystery achievements shown as "???" until unlocked
+- **Category Colors**: Achievement icons use category-specific colors
+- **Responsive Grid**: 1-2 column layout based on screen size
+- **Smooth Animations**: Staggered entry animations and hover effects
+
+### Props
+
+<ParamField path="isOpen" type="boolean" required>
+  Controls modal visibility. When `true`, modal is displayed with backdrop.
+</ParamField>
+
+<ParamField path="onClose" type="() => void" required>
+  Callback function triggered when user closes the modal (clicks backdrop or close button).
+</ParamField>
+
+<ParamField path="stats" type="UserStats" required>
+  User statistics object containing:
+  - `unlockedAchievements`: Array of achievement IDs that have been unlocked
+  - Other user stats (total cards studied, streak, etc.)
+</ParamField>
+
+### Usage Example
+
+```tsx
+import { AchievementsModal } from '@/components/AchievementsModal';
+import { useState } from 'react';
+import type { UserStats } from '@/data/achievements';
+
+function App() {
+  const [showAchievements, setShowAchievements] = useState(false);
+  
+  const userStats: UserStats = {
+    unlockedAchievements: [
+      'first-card',
+      'react-complete',
+      'streak-7'
+    ],
+    totalCardsStudied: 150,
+    currentStreak: 7,
+    // ... other stats
+  };
+
+  return (
+    <>
+      <button onClick={() => setShowAchievements(true)}>
+        View Achievements
+      </button>
+      
+      <AchievementsModal
+        isOpen={showAchievements}
+        onClose={() => setShowAchievements(false)}
+        stats={userStats}
+      />
+    </>
+  );
+}
+```
+
+### Modal Structure
+
+#### Header Section
+
+```tsx
+<div className="p-6 border-b-2 border-border bg-muted/30">
+  <h2 className="text-3xl font-display font-bold">Trophy Room</h2>
+  <p className="text-muted-foreground">Your collection of vibes</p>
+  
+  {/* Progress bar */}
+  <div className="h-3 rounded-full bg-muted">
+    <div style={{ width: `${progress}%` }} className="bg-foreground" />
+  </div>
+  <div className="text-[10px]">
+    {unlockedCount} / {totalCount} Unlocked
+  </div>
+</div>
+```
+
+- Trophy room branding
+- Total progress percentage
+- Unlocked count display
+
+#### Achievement Grid
+
+```tsx
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  {sortedAchievements.map((achievement, index) => (
+    // Achievement card
+  ))}
+</div>
+```
+
+- Responsive 1-2 column grid
+- Scrollable container
+- Staggered animations
+
+### Achievement Card States
+
+#### Unlocked Achievement
+
+```tsx
+className="border-foreground/50 bg-gradient-to-br shadow-lg"
+```
+
+- Vibrant gradient background
+- Category-colored icon
+- Full title and description visible
+- Green checkmark badge
+- Hover scale effect
+
+#### Locked Achievement
+
+```tsx
+className="border-border/30 bg-muted/10 opacity-50 grayscale"
+```
+
+- Muted, desaturated colors
+- Gray icon
+- Reduced opacity
+- No hover effects
+
+#### Hidden Achievement (Locked)
+
+```tsx
+{isHidden ? '???' : achievement.title}
+{isHidden ? 'Keep exploring to find this hidden gem.' : achievement.description}
+```
+
+- Question mark icon
+- "???" title
+- Mystery description
+- Revealed upon unlocking
+
+### Progress Calculation
+
+```tsx
+const unlockedCount = stats.unlockedAchievements.length;
+const totalCount = ACHIEVEMENTS.length;
+const progress = Math.round((unlockedCount / totalCount) * 100);
+```
+
+Percentage shown in header progress bar.
+
+### Category Colors
+
+Achievements linked to categories use category-specific colors:
+
+```tsx
+const cat = categories.find(c => c.id === achievement.category);
+const colorClass = cat ? cat.colorClass : 'bg-gradient-to-br from-amber-400 to-orange-500';
+```
+
+- React achievements: Blue/indigo gradient
+- TypeScript achievements: Cyan/blue gradient
+- Generic achievements: Amber/orange gradient
+
+### Backdrop Blur
+
+```tsx
+<motion.div
+  className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+  onClick={onClose}
+/>
+```
+
+Click backdrop to close modal.
+
+---
+
+## AchievementPopup
+
+A celebratory popup that appears when achievements are unlocked.
+
+### Features
+
+- **Confetti Animation**: Canvas-based confetti burst
+- **Auto-dismiss**: Automatically closes after 4.5 seconds
+- **Expandable**: Click to see full description
+- **Smooth Animations**: Entrance, exit, and expansion effects
+- **Manual Close**: Close button available
+
+### Props
+
+<ParamField path="achievement" type="Achievement | null" required>
+  The achievement object to display, or `null` to hide the popup. Contains:
+  - `id`: Unique achievement identifier
+  - `title`: Achievement name
+  - `description`: Detailed explanation
+  - `icon`: Material Icons icon name
+  - `category`: Optional category association
+  - `isHidden`: Whether achievement is hidden until unlocked
+</ParamField>
+
+<ParamField path="onClose" type="() => void" required>
+  Callback function triggered when popup is dismissed (auto-dismiss or manual close).
+</ParamField>
+
+### Usage Example
+
+```tsx
+import { AchievementPopup } from '@/components/AchievementPopup';
+import { useState } from 'react';
+import type { Achievement } from '@/data/achievements';
+
+function StudySession() {
+  const [currentAchievement, setCurrentAchievement] = useState<Achievement | null>(null);
+  
+  const unlockAchievement = (achievementId: string) => {
+    const achievement = ACHIEVEMENTS.find(a => a.id === achievementId);
+    if (achievement) {
+      setCurrentAchievement(achievement);
+    }
+  };
+
+  return (
+    <>
+      {/* Your study interface */}
+      
+      <AchievementPopup
+        achievement={currentAchievement}
+        onClose={() => setCurrentAchievement(null)}
+      />
+    </>
+  );
+}
+```
+
+### Confetti Effect
+
+Uses `canvas-confetti` library with optimized burst pattern:
+
+```tsx
+const fireBurst = () => {
+  confetti({
+    particleCount: 40,
+    angle: 60,
+    spread: 70,
+    origin: { x: 0, y: 0.6 },
+    colors: ['#ec4899', '#8b5cf6', '#f59e0b'],
+    disableForReducedMotion: true
+  });
+  confetti({
+    particleCount: 40,
+    angle: 120,
+    spread: 70,
+    origin: { x: 1, y: 0.6 },
+    colors: ['#ec4899', '#8b5cf6', '#f59e0b'],
+  });
+};
+
+// Fire 3 bursts
+fireBurst();
+setTimeout(fireBurst, 400);
+setTimeout(fireBurst, 800);
+```
+
+- Dual-angle bursts from left and right
+- Pink, purple, and amber colors
+- Respects reduced motion preferences
+- Three sequential bursts for impact
+
+### Auto-dismiss Logic
+
+```tsx
+useEffect(() => {
+  if (!achievement) return;
+  if (isExpanded) return; // Don't auto-close if user is reading
+
+  const timer = setTimeout(() => {
+    onClose();
+  }, 4500);
+  return () => clearTimeout(timer);
+}, [achievement, isExpanded, onClose]);
+```
+
+- 4.5 second delay
+- Pauses when expanded
+- Resumes when collapsed
+
+### Expand/Collapse
+
+```tsx
+const handleClick = () => {
+  setIsExpanded(!isExpanded);
+};
+
+<AnimatePresence>
+  {isExpanded && (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: 'auto', opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+    >
+      <div className="bg-muted/50 rounded-xl p-3">
+        <p className="text-sm">{achievement.description}</p>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
+```
+
+- Click anywhere on popup to expand
+- Smooth height animation
+- Shows full description
+- "Tap anywhere to collapse" hint
+
+### Popup Structure
+
+```tsx
+<motion.div className="fixed bottom-24 left-0 right-0 z-50 flex justify-center">
+  <motion.div className="bg-card/95 backdrop-blur-xl border-2 border-primary/50 rounded-3xl">
+    {/* Icon */}
+    <div className="bg-gradient-to-br from-primary to-purple-600 rounded-2xl p-3">
+      <span className="material-icons text-3xl">{achievement.icon}</span>
+    </div>
+    
+    {/* Content */}
+    <div>
+      <div className="text-[10px] text-primary">Achievement Unlocked!</div>
+      <h3 className="text-lg font-display font-bold">{achievement.title}</h3>
+      <p className="text-xs text-muted-foreground">{achievement.description}</p>
+    </div>
+    
+    {/* Close button */}
+    <button onClick={onClose}>
+      <span className="material-icons">close</span>
+    </button>
+  </motion.div>
+</motion.div>
+```
+
+### Shimmer Effect
+
+```tsx
+<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent shine-animation" />
+```
+
+Subtle shimmer animation draws attention to the popup.
+
+### Entrance/Exit Animations
+
+```tsx
+initial={{ opacity: 0, scale: 0.5, y: 100 }}
+animate={{ opacity: 1, scale: 1, y: 0 }}
+exit={{ opacity: 0, scale: 0.5, y: 50 }}
+```
+
+- Slides up from bottom
+- Scales from 50% to 100%
+- Fades in/out
+- Spring physics for bounce
+
+### Expand Hint
+
+When collapsed, shows animated expand indicator:
+
+```tsx
+{!isExpanded && (
+  <div className="absolute bottom-1 left-0 right-0 flex justify-center">
+    <span className="material-icons text-xs animate-bounce">expand_more</span>
+  </div>
+)}
+```
+
+## Achievement Data Structure
+
+Both components expect achievements in this format:
+
+```typescript
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category?: string;
+  isHidden?: boolean;
+}
+
+interface UserStats {
+  unlockedAchievements: string[];
+  // ... other stats
+}
+```
+
+## Example Achievement Flow
+
+```tsx
+// 1. User completes action
+const checkAchievements = () => {
+  if (completedAllReactCards) {
+    const achievement = ACHIEVEMENTS.find(a => a.id === 'react-complete');
+    
+    // 2. Show popup
+    setCurrentAchievement(achievement);
+    
+    // 3. Update user stats
+    setUserStats(prev => ({
+      ...prev,
+      unlockedAchievements: [...prev.unlockedAchievements, 'react-complete']
+    }));
+  }
+};
+
+// 4. Popup auto-dismisses after 4.5s
+// 5. Achievement appears in modal as unlocked
+```
+
+## Source Code References
+
+- AchievementsModal: `/workspace/source/src/components/AchievementsModal.tsx`
+- AchievementPopup: `/workspace/source/src/components/AchievementPopup.tsx`
+- Achievement Data: `/workspace/source/src/data/achievements.ts`

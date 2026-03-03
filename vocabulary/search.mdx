@@ -1,0 +1,380 @@
+---
+title: Search Vocabulary
+description: Find and learn specific terms from our database of 483+ definitions
+---
+
+## Search Features
+
+Vocab Vault's search helps you quickly find any term, whether you're debugging an error message, reading documentation, or trying to understand what someone just said in a meeting.
+
+## How Search Works
+
+### Instant Filtering
+
+The search bar filters all 483 terms in real-time across:
+
+- **Term name** - The actual vocabulary word
+- **Definition** - Full technical explanation
+- **ELI5 definition** - Simplified version
+- **Category** - Which topic it belongs to
+- **Examples** - Code snippets and visual diagrams
+
+<Info>
+Search is **case-insensitive** and matches partial words. Typing "auth" finds "Authentication", "Authorization", "OAuth", and "Firebase Auth".
+</Info>
+
+### Smart Matching
+
+Search understands different query types:
+
+<Tabs>
+  <Tab title="Exact Terms">
+    **Query**: `API`
+    
+    **Finds**:
+    - API (the main term)
+    - API Key
+    - API Call
+    - Gemini API
+    - REST API
+    
+    Perfect for: Finding a specific concept you heard
+  </Tab>
+  
+  <Tab title="Concepts">
+    **Query**: `database`
+    
+    **Finds**:
+    - Firestore
+    - Database
+    - Schema
+    - SQL
+    - Collection
+    - Document
+    
+    Perfect for: Exploring related terms
+  </Tab>
+  
+  <Tab title="Problems">
+    **Query**: `error`
+    
+    **Finds**:
+    - Error Message
+    - Error State
+    - TypeError
+    - Reference Error
+    - Syntax Error
+    - Stack Trace
+    
+    Perfect for: Understanding error messages
+  </Tab>
+  
+  <Tab title="Tools">
+    **Query**: `cursor`
+    
+    **Finds**:
+    - Composer
+    - Tab Autocomplete
+    - Apply
+    - Cmd+K
+    
+    Perfect for: Learning tool-specific features
+  </Tab>
+</Tabs>
+
+## Common Search Examples
+
+### By Problem You're Facing
+
+<CodeGroup>
+```text "How do I save data?"
+Search: save OR storage OR database
+
+Results:
+- Firestore (cloud database)
+- Local Storage (browser storage)
+- Database (general concept)
+- Collection (data organization)
+- State (component memory)
+```
+
+```text "My app crashed"
+Search: crash OR error OR debug
+
+Results:
+- Bug (what went wrong)
+- Error Message (what it says)
+- Stack Trace (where it broke)
+- Console.log (how to investigate)
+- DevTools (debugging interface)
+```
+
+```text "Need user login"
+Search: login OR auth
+
+Results:
+- Authentication (proving identity)
+- Authorization (what you can do)
+- OAuth (login with Google/etc)
+- Token (session proof)
+- Firebase Auth (ready-made solution)
+```
+</CodeGroup>
+
+### By Technology
+
+<Tabs>
+  <Tab title="React">
+    Search: `react` or `component`
+    
+    **Related terms**:
+    - Component
+    - Props
+    - State
+    - useState
+    - useEffect
+    - JSX
+  </Tab>
+  
+  <Tab title="Firebase">
+    Search: `firebase`
+    
+    **Related terms**:
+    - Firestore
+    - Firebase Auth
+    - Firebase Hosting
+    - Cloud Functions
+    - Collection
+    - Document
+  </Tab>
+  
+  <Tab title="Git">
+    Search: `git`
+    
+    **Related terms**:
+    - git init
+    - git status
+    - git commit
+    - git push
+    - Branch
+    - Merge
+    - Pull Request
+  </Tab>
+  
+  <Tab title="AI Tools">
+    Search: `cursor` or `lovable` or `ai`
+    
+    **Related terms**:
+    - Composer
+    - Canvas
+    - Prompt
+    - Context
+    - Cascade
+    - Agent
+  </Tab>
+</Tabs>
+
+### By Category
+
+Filter by category name to see all terms in that area:
+
+- `foundation` - Core concepts (28 terms)
+- `uiux` - Design patterns (54 terms)
+- `security` - Protection (23 terms)
+- `debugging` - Bug fixing (25 terms)
+- `money` - Business metrics (20 terms)
+
+## Search Tips
+
+<CardGroup cols={2}>
+  <Card title="Use Short Keywords" icon="key">
+    `auth` works better than `authentication systems`
+    
+    Shorter queries return more results
+  </Card>
+  
+  <Card title="Try Synonyms" icon="arrows-rotate">
+    Can't find it? Try different words:
+    - "save" → "store" → "persist"
+    - "crash" → "error" → "break"
+    - "style" → "css" → "design"
+  </Card>
+  
+  <Card title="Search Errors" icon="triangle-exclamation">
+    Copy the error type into search:
+    - `TypeError`
+    - `CORS`
+    - `404`
+    
+    Learn what it means and how to fix it
+  </Card>
+  
+  <Card title="Explore Related" icon="diagram-project">
+    Once you find one term, explore its category to learn related concepts
+  </Card>
+</CardGroup>
+
+## Filter Results
+
+The search results show:
+
+<Steps>
+  <Step title="Match count">
+    **Showing 12 of 483 cards** - How many terms match your query
+  </Step>
+  
+  <Step title="Filtered cards">
+    Only flashcards matching your search appear in the deck
+  </Step>
+  
+  <Step title="Clear search">
+    Tap the X button to see all terms again
+  </Step>
+</Steps>
+
+## Mobile Search Experience
+
+### Expand & Focus
+
+On mobile, the search bar:
+1. Starts collapsed to save space
+2. Expands when tapped
+3. Auto-focuses so you can type immediately
+4. Collapses again when cleared
+
+### Live Feedback
+
+As you type, you see:
+- **Real-time filtering** - Results update instantly
+- **Match count** - "Showing 8 of 483 cards"
+- **No results state** - "No cards match your search" with helpful icon
+
+## Search Use Cases
+
+<AccordionGroup>
+  <Accordion title="Learning Mode: Explore a Topic">
+    **Scenario**: You want to learn about databases
+    
+    1. Search: `database`
+    2. Review all related terms: Database, Schema, SQL, NoSQL, Firestore
+    3. Study those specific flashcards
+    4. Clear search and move to next topic
+    
+    **Why it works**: Connects related concepts together
+  </Accordion>
+  
+  <Accordion title="Debug Mode: Understand an Error">
+    **Scenario**: Your code shows "CORS error"
+    
+    1. Search: `CORS`
+    2. Read definition: "Cross-Origin Resource Sharing. Browsers block requests between different websites for safety."
+    3. Understand it's a security feature, not a bug
+    4. Search related: `security` or `api`
+    
+    **Why it works**: Contextualizes error messages
+  </Accordion>
+  
+  <Accordion title="Communication Mode: Understand Jargon">
+    **Scenario**: Developer says "We need to deploy to staging first"
+    
+    1. Search: `staging`
+    2. Read: "A copy of production for testing before going live"
+    3. Search: `deploy`
+    4. Read: "Making your app available on the internet"
+    5. Now you understand: Test in staging, then go live
+    
+    **Why it works**: Translates developer-speak to plain English
+  </Accordion>
+  
+  <Accordion title="Tool Mode: Learn Your Platform">
+    **Scenario**: Starting with Cursor IDE
+    
+    1. Search: `cursor`
+    2. Find tool-specific terms: Composer, Tab Autocomplete, Apply, Cmd+K
+    3. Study each flashcard
+    4. Apply immediately in Cursor
+    
+    **Why it works**: Focused learning for your specific tool
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Search Patterns
+
+### Multi-Concept Search
+
+Combine terms to narrow results:
+
+```text
+"user auth" → Terms about user authentication
+"api security" → Secure API practices  
+"react state" → React state management
+"git merge" → Git merging concepts
+```
+
+### Category Exploration
+
+Browse entire categories:
+
+```text
+Search "shortcuts" → See all 25 keyboard shortcuts
+Search "ai" → See all 21 AI & prompt terms
+Search "money" → See all 20 business metrics
+```
+
+### Tool-Specific Deep Dives
+
+```text
+"lovable" → Canvas, Components Panel, Supabase Integration
+"cursor" → Composer, Tab Autocomplete, Apply
+"firebase" → Firestore, Auth, Hosting, Cloud Functions
+"replit" → Repl, Secrets, Ghostwriter
+```
+
+## Search Behavior
+
+<Note>
+**What search does**:
+- ✅ Filters flashcards in real-time
+- ✅ Matches partial words
+- ✅ Searches all definition fields
+- ✅ Case-insensitive matching
+- ✅ Shows match count
+
+**What search doesn't do**:
+- ❌ Suggest corrections ("Did you mean...?")
+- ❌ Sort by relevance (shows category order)
+- ❌ Search examples/code (only definitions)
+</Note>
+
+## Integration with Study Flow
+
+### Typical Workflow
+
+1. **Browse Categories** → Choose broad area (UI/UX, Security, etc.)
+2. **Start Studying** → Flip cards, learn terms
+3. **Encounter Unknown** → See unfamiliar term in definition
+4. **Quick Search** → Search that term to learn it
+5. **Return to Study** → Clear search, continue where you left off
+
+### Progressive Learning
+
+As you advance:
+- **Week 1**: Search everything you don't know
+- **Week 2**: Search less, recognize more
+- **Week 3**: Only search advanced terms
+- **Week 4**: Teaching others what terms mean
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="View All Categories" icon="grid" href="/vocabulary/categories-list">
+    Browse the complete list of 24 categories
+  </Card>
+  <Card title="Start Learning" icon="graduation-cap" href="/vocabulary/overview">
+    Learn about the vocabulary approach
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro tip**: When you encounter a new term in the wild (documentation, videos, conversations), immediately search for it in Vocab Vault. Learning in context = learning that sticks.
+</Tip>

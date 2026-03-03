@@ -1,0 +1,243 @@
+---
+title: Quiz Mode
+description: Test your knowledge with multiple choice and type-answer quizzes, complete with hints, review mode, and score sharing.
+---
+
+Quiz Mode transforms passive learning into active testing. Challenge yourself with 10-question quizzes in multiple choice or type-answer format, with instant feedback and detailed results.
+
+## Quiz Types
+
+Toggle between two quiz formats using the toggle in the header:
+
+### Multiple Choice
+
+Answer by selecting from 4 options:
+- **One correct answer** (the vocabulary term that matches the definition)
+- **Three wrong answers** randomly selected from other terms
+- Options are shuffled each time for variety
+
+```tsx
+// Wrong answers generated from other terms
+const wrongOptions = getWrongAnswers(term, 3);
+const options = shuffleArray([term.term, ...wrongOptions]);
+```
+
+### Type Answer
+
+Type the exact term that matches the definition:
+- **Flexible matching**: Accepts exact matches or close variations
+- **Case insensitive**: "API" and "api" both work
+- **Partial matching**: Partial correct answers are accepted
+- **Press Enter** to submit your answer
+
+```tsx
+// Flexible answer checking
+const normalizedAnswer = typedAnswer.trim().toLowerCase();
+const normalizedCorrect = correctAnswer.toLowerCase();
+
+if (normalizedAnswer === normalizedCorrect ||
+    normalizedCorrect.includes(normalizedAnswer) ||
+    normalizedAnswer.includes(normalizedCorrect)) {
+  // Correct!
+}
+```
+
+## How Quizzes Work
+
+### Starting a Quiz
+
+1. Select a category from the home screen
+2. Tap the "Quiz" button
+3. Choose your quiz type (multiple choice or type answer)
+4. Quiz begins with 10 randomly selected questions
+
+### Question Format
+
+Each question shows:
+- **Progress indicator**: Dots showing which question you're on (e.g., "3 / 10")
+- **Definition card**: The definition you need to match
+- **Hint button**: Click to see the first letter of the answer
+- **Answer options** or **input field** depending on quiz type
+
+### Answering Questions
+
+**Multiple Choice:**
+- Click any option (A, B, C, or D)
+- Correct answers show green with a checkmark ✓
+- Wrong answers show red with an X
+- The correct answer is always highlighted in green
+
+**Type Answer:**
+- Type your answer in the input field
+- Click "Submit Answer" or press Enter
+- Input border turns green (correct) or red (incorrect)
+- If wrong, the correct answer is displayed below
+
+<Warning>
+Once you submit an answer, you cannot change it. Make sure you're confident before submitting!
+</Warning>
+
+## Hints
+
+Before answering, you can reveal a hint:
+
+```tsx
+<button onClick={() => setShowHint(true)}>
+  {showHint ? `Starts with "${correctAnswer[0]}"` : 'Show hint'}
+</button>
+```
+
+Hints show the first letter of the correct term. Use them strategically when you're close but not quite sure!
+
+## Results & Scoring
+
+After completing all 10 questions, you'll see:
+
+### Score Breakdown
+- Total correct answers out of 10
+- Percentage score
+- Animated progress bar
+
+### Performance Feedback
+- **80%+ (8-10 correct)**: "Excellent!" with trophy icon 🏆
+- **50-79% (5-7 correct)**: "Good Job!" with thumbs up 👍
+- **Below 50% (0-4 correct)**: "Keep Practicing!" with study icon 📚
+
+```tsx
+const percentage = Math.round((score / questions.length) * 100);
+
+// Color-coded progress bar
+className={percentage >= 80 ? 'bg-green-500' : 
+           percentage >= 50 ? 'bg-yellow-500' : 
+           'bg-orange-500'}
+```
+
+### Post-Quiz Actions
+
+<CardGroup cols={2}>
+  <Card title="Try Again" icon="rotate-right">
+    Restart the quiz with a fresh set of 10 random questions from the same category.
+  </Card>
+  <Card title="Back to Study" icon="book">
+    Return to flashcard mode to review terms before retrying.
+  </Card>
+  <Card title="Review Mistakes" icon="clipboard-list">
+    Only appears if you got questions wrong. Launches a focused quiz with only your missed terms.
+  </Card>
+  <Card title="Share Score" icon="share-nodes">
+    Share your quiz results on social media or with friends.
+  </Card>
+</CardGroup>
+
+## Review Mode
+
+If you missed any questions, a special "Review Mistakes" button appears:
+
+```tsx
+{wrongAnswers.length > 0 && !reviewMode && (
+  <button onClick={() => setReviewMode(true)}>
+    Review {wrongAnswers.length} Mistake{wrongAnswers.length > 1 ? 's' : ''}
+  </button>
+)}
+```
+
+**Review Mode creates a quiz with only the terms you got wrong:**
+- Focuses study time on weak areas
+- Uses the same quiz format you were using
+- Tracks performance separately
+- Can be retried until mastered
+
+<Tip>
+Review Mode is one of the most effective study tools. Don't skip it! Reviewing mistakes immediately after a quiz dramatically improves retention.
+</Tip>
+
+## Progress Tracking Integration
+
+Quiz results affect your overall progress:
+
+```tsx
+onComplete={(correct, total) => {
+  // Results are logged for progress tracking
+}}
+```
+
+- Quiz completion counts toward daily study streaks
+- Results are factored into category progress percentages
+- May unlock achievements based on performance
+
+See [Progress Tracking](/features/progress-tracking) for more details.
+
+## Share Your Score
+
+After completing a quiz, share your results:
+
+```tsx
+const handleShareScore = () => {
+  shareQuizScore(score, questions.length);
+};
+```
+
+Share functionality uses the Web Share API when available, or falls back to copy-to-clipboard.
+
+## Keyboard Shortcuts
+
+Type-answer mode supports keyboard shortcuts:
+
+- **Enter**: Submit answer (when unanswered)
+- **Enter**: Next question (after answering)
+
+```tsx
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !isAnswered) {
+    handleTypeSubmit();
+  } else if (e.key === 'Enter' && isAnswered) {
+    handleNext();
+  }
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Start with Flashcards">
+    Review terms in flashcard mode before taking a quiz. Quizzes are most effective when you have baseline familiarity.
+  </Accordion>
+
+  <Accordion title="Use Both Quiz Types">
+    Alternate between multiple choice and type-answer. Multiple choice tests recognition, while type-answer tests recall - both are valuable.
+  </Accordion>
+
+  <Accordion title="Don't Skip Review Mode">
+    Always review your mistakes immediately after a quiz. This is when the learning opportunity is strongest.
+  </Accordion>
+
+  <Accordion title="Use Hints Strategically">
+    Hints are there to help, but try to answer without them first. Use hints as a last resort to maximize learning.
+  </Accordion>
+
+  <Accordion title="Track Your Progress">
+    Pay attention to your quiz percentages over time. Consistent 80%+ scores mean you're ready to move to a new category.
+  </Accordion>
+</AccordionGroup>
+
+## Technical Details
+
+### Question Generation
+
+Quizzes generate questions by:
+1. Shuffling available terms from the selected category
+2. Selecting the first 10 terms (or all terms in review mode)
+3. Generating 3 wrong answers from other terms in the entire vocabulary set
+4. Shuffling the 4 options so the correct answer isn't always in the same position
+
+### State Management
+
+```tsx
+const [currentIndex, setCurrentIndex] = useState(0);
+const [score, setScore] = useState(0);
+const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+const [isAnswered, setIsAnswered] = useState(false);
+const [wrongAnswers, setWrongAnswers] = useState<Term[]>([]);
+```
+
+State tracks current question, score, user's answer, and wrong answers for review mode.

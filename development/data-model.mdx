@@ -1,0 +1,251 @@
+---
+title: Data Model
+description: TypeScript interfaces and data structures used throughout Vocab Vault
+---
+
+## Overview
+
+Vocab Vault uses TypeScript interfaces to maintain type safety across the application. All core data structures are defined in `/src/data/` and used throughout the app for vocabulary terms, achievements, user statistics, and spaced repetition.
+
+## Core Interfaces
+
+### Term Interface
+
+The `Term` interface represents a single vocabulary term with its definition and metadata.
+
+```typescript
+export interface Term {
+  id: number;
+  term: string;
+  definition: string;
+  eli5Definition?: string; // Optional "Explain Like I'm 5" simplified definition
+  category: string;
+  example?: string; // Optional ASCII/text visual example
+}
+```
+
+**Properties:**
+
+- `id` - Unique numeric identifier for the term
+- `term` - The vocabulary word or phrase
+- `definition` - Standard technical definition
+- `eli5Definition` - Optional simplified explanation for beginners
+- `category` - Category ID this term belongs to
+- `example` - Optional ASCII art or text-based visual example
+
+**Location:** `/src/data/vocabulary.ts:1-8`
+
+### Achievement Interface
+
+Achievements are unlocked based on user progress and study patterns.
+
+```typescript
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category?: CategoryId;
+  isHidden?: boolean;
+  condition: (stats: UserStats) => boolean;
+}
+```
+
+**Properties:**
+
+- `id` - Unique string identifier
+- `title` - Display name of the achievement
+- `description` - What the user did to earn it
+- `icon` - Material icon name
+- `category` - Optional category this achievement relates to
+- `isHidden` - Whether this is a secret achievement
+- `condition` - Function that returns true when achievement is unlocked
+
+**Location:** `/src/data/achievements.ts:3-11`
+
+### UserStats Interface
+
+Tracks all user progress and statistics for achievement checking.
+
+```typescript
+export interface UserStats {
+  totalCardsViewed: number;
+  unlockedAchievements: string[];
+  categoryProgress: Record<string, number>;
+  streak: number;
+  logoClicks?: number;
+  lastStudyTime?: number;
+}
+```
+
+**Properties:**
+
+- `totalCardsViewed` - Total number of flashcards viewed
+- `unlockedAchievements` - Array of achievement IDs that have been unlocked
+- `categoryProgress` - Object mapping category IDs to number of mastered terms
+- `streak` - Current consecutive days of studying
+- `logoClicks` - Optional counter for logo clicks (easter egg)
+- `lastStudyTime` - Optional timestamp of last study session
+
+**Location:** `/src/data/achievements.ts:13-20`
+
+## Spaced Repetition Structures
+
+### SRSCard Interface
+
+Represents a single card in the spaced repetition system using the SM-2 algorithm.
+
+```typescript
+export interface SRSCard {
+  termId: number;
+  easeFactor: number;      // How easy this card is (starts at 2.5)
+  interval: number;        // Days until next review
+  repetitions: number;     // Number of successful reviews in a row
+  nextReviewDate: string;  // ISO date string
+  lastReviewDate: string | null;
+  quality: number;         // Last quality rating
+}
+```
+
+**Properties:**
+
+- `termId` - References the Term.id this card is for
+- `easeFactor` - Difficulty multiplier (default 2.5, minimum 1.3)
+- `interval` - Number of days until the next review is due
+- `repetitions` - Consecutive successful reviews (resets to 0 on failure)
+- `nextReviewDate` - ISO date string (YYYY-MM-DD) when card is next due
+- `lastReviewDate` - ISO date string of last review, or null if never reviewed
+- `quality` - Last quality rating (0-5 scale)
+
+**Location:** `/src/lib/sm2.ts:14-22`
+
+### SRSData Interface
+
+Container for all SRS cards with versioning for future schema migrations.
+
+```typescript
+export interface SRSData {
+  cards: Record<number, SRSCard>;
+  version: number;
+}
+```
+
+**Properties:**
+
+- `cards` - Object mapping term IDs to their SRS card data
+- `version` - Schema version number for migration support
+
+**Location:** `/src/lib/sm2.ts:24-27`
+
+## Type Unions
+
+### TermStatus
+
+Represents the learning status of a term in classic (non-SRS) mode.
+
+```typescript
+type TermStatus = 'known' | 'learning' | 'unseen';
+```
+
+**Values:**
+
+- `known` - User has mastered this term
+- `learning` - User is currently learning this term
+- `unseen` - User has not studied this term yet
+
+**Location:** `/src/hooks/useProgress.ts:19`
+
+### Progress Interface
+
+Maps term IDs to their learning status in classic mode.
+
+```typescript
+interface Progress {
+  [termId: number]: TermStatus;
+}
+```
+
+**Location:** `/src/hooks/useProgress.ts:21-23`
+
+## Categories
+
+Vocab Vault organizes terms into 24 categories, each with visual styling and metadata.
+
+```typescript
+export const categories = [
+  { 
+    id: "foundation", 
+    name: "Foundation", 
+    subtitle: "Core Concepts", 
+    icon: "architecture", 
+    abbrev: "FDN", 
+    colorClass: "bg-category-yellow" 
+  },
+  // ... 23 more categories
+] as const;
+
+export type CategoryId = typeof categories[number]["id"];
+```
+
+**Category Structure:**
+
+- `id` - Unique identifier used in Term.category
+- `name` - Display name
+- `subtitle` - Short descriptor
+- `icon` - Material Icons name
+- `abbrev` - Short abbreviation for compact displays
+- `colorClass` - Tailwind CSS class for category color
+
+**Location:** `/src/data/vocabulary.ts:10-37`
+
+**All Categories:**
+
+Foundation, APIs, Code, Development, Git, Cloud, UI/UX, CSS, AI, No-Code, Money, Tools, Shortcuts, Security, Debugging, Analytics, Mobile, Data, SEO, Testing, Architecture, Hosting, AI Tools, Package
+
+## Quality Ratings
+
+### SM-2 Quality Scale
+
+The spaced repetition system uses a 0-5 quality scale based on the SuperMemo 2 algorithm:
+
+```typescript
+// Quality ratings:
+// 0 - Complete blackout, no recall
+// 1 - Incorrect, but upon seeing the answer, remembered
+// 2 - Incorrect, but the answer seemed easy to recall
+// 3 - Correct with serious difficulty
+// 4 - Correct with some hesitation
+// 5 - Perfect response, instant recall
+```
+
+### Simplified Ratings
+
+The UI uses a simplified 4-button interface that maps to SM-2 quality:
+
+```typescript
+export const SIMPLE_RATINGS = [
+  { value: 1, label: "Again", sm2Quality: 1, color: "bg-red-500", icon: "replay" },
+  { value: 2, label: "Hard", sm2Quality: 3, color: "bg-orange-500", icon: "sentiment_dissatisfied" },
+  { value: 3, label: "Good", sm2Quality: 4, color: "bg-green-500", icon: "check" },
+  { value: 4, label: "Easy", sm2Quality: 5, color: "bg-emerald-500", icon: "bolt" },
+] as const;
+```
+
+**Location:** `/src/lib/sm2.ts:40-45`
+
+## Mastery Levels
+
+SRS cards progress through four mastery levels based on interval and repetitions:
+
+```typescript
+'new' | 'learning' | 'reviewing' | 'mastered'
+```
+
+**Level Criteria:**
+
+- `new` - Never reviewed (repetitions = 0)
+- `learning` - Interval < 7 days
+- `reviewing` - Interval 7-20 days
+- `mastered` - Interval ≥ 21 days
+
+**Location:** `/src/lib/sm2.ts:213-218`

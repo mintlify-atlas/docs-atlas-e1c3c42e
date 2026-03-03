@@ -1,0 +1,736 @@
+---
+title: Project Structure
+description: Directory organization, file naming conventions, and codebase navigation guide
+---
+
+Vocab Vault follows a clear, scalable directory structure that separates concerns and makes the codebase easy to navigate.
+
+## Root Directory
+
+```
+vocab-vault-alpha/
+├── src/                   # Application source code
+├── public/                # Static assets
+├── dist/                  # Production build output
+├── node_modules/          # Dependencies
+├── android/               # Capacitor Android project
+├── ios/                   # Capacitor iOS project (if added)
+├── patches/               # patch-package modifications
+├── package.json           # Dependencies and scripts
+├── vite.config.ts         # Vite build configuration
+├── capacitor.config.ts    # Capacitor native config
+├── tailwind.config.ts     # Tailwind design system
+├── tsconfig.json          # TypeScript configuration
+├── eslint.config.js       # ESLint rules
+└── README.md              # Project documentation
+```
+
+## Source Structure (`src/`)
+
+The `src/` directory contains all application code, organized by responsibility:
+
+```
+src/
+├── components/            # React components
+│   ├── ui/               # Reusable UI primitives (shadcn)
+│   └── *.tsx             # Feature-specific components
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility functions and helpers
+├── data/                 # Static data and configurations
+├── pages/                # Route-level components
+├── App.tsx               # Root application component
+├── main.tsx              # Entry point
+├── index.css             # Global styles and Tailwind imports
+└── vite-env.d.ts         # Vite type definitions
+```
+
+## Components Directory
+
+### Feature Components (`src/components/`)
+
+Top-level components representing major features:
+
+```
+components/
+├── AboutModal.tsx          # App information and credits
+├── AchievementPopup.tsx    # Achievement celebration overlay
+├── AchievementsModal.tsx   # Achievement showcase dialog
+├── CategoryCard.tsx        # Category selection card
+├── CategoryCarousel.tsx    # Swipeable category carousel
+├── CategoryComplete.tsx    # Category completion celebration
+├── CategoryMastered.tsx    # Category mastery celebration
+├── DailyGoalWidget.tsx     # Daily progress tracker
+├── ErrorBoundary.tsx       # Error catching boundary
+├── FlashCard.tsx           # Core flashcard with flip/swipe
+├── Footer.tsx              # App footer with navigation
+├── GoalSettingsModal.tsx   # Daily goal configuration
+├── Header.tsx              # App header with logo and actions
+├── NavLink.tsx             # Navigation link component
+├── QuizMode.tsx            # SRS quiz interface
+├── SearchBar.tsx           # Term search functionality
+├── StatsModal.tsx          # Progress statistics dialog
+├── StudyFooter.tsx         # Study mode footer controls
+├── StudyHeader.tsx         # Study mode header
+├── ThemeSelector.tsx       # Dark/light theme switcher
+└── WelcomeScreen.tsx       # First-time user onboarding
+```
+
+**Naming convention:**
+- PascalCase for component files
+- Descriptive names ending in component type (`Modal`, `Card`, `Widget`)
+- One component per file
+
+### UI Primitives (`src/components/ui/`)
+
+Reusable, unstyled components from shadcn/ui:
+
+```
+ui/
+├── button.tsx              # Button with variants
+├── dialog.tsx              # Modal dialog primitive
+├── input.tsx               # Text input field
+├── label.tsx               # Form label
+├── separator.tsx           # Horizontal/vertical divider
+├── skeleton.tsx            # Loading placeholder
+├── sonner.tsx              # Toast notification provider
+├── toast.tsx               # Toast notification component
+├── toaster.tsx             # Toast container
+├── toggle.tsx              # Toggle button
+└── tooltip.tsx             # Hover/focus popover
+```
+
+<Info>
+UI components are copied from shadcn/ui, not installed via npm. This gives you full control to modify them.
+</Info>
+
+**Usage pattern:**
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
+<Dialog>
+  <DialogTrigger asChild>
+    <Button variant="outline">Open</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogTitle>Title</DialogTitle>
+    {/* Content */}
+  </DialogContent>
+</Dialog>
+```
+
+## Hooks Directory (`src/hooks/`)
+
+Custom React hooks encapsulating business logic:
+
+```
+hooks/
+├── useProgress.ts          # Main progress and state management
+├── useDailyGoals.ts        # Daily goal tracking
+├── useSpeech.ts            # Text-to-speech functionality
+├── use-mobile.tsx          # Mobile detection hook
+└── use-toast.ts            # Toast notification hook
+```
+
+### Hook Responsibilities
+
+<Tabs>
+  <Tab title="useProgress.ts">
+    **Central state management hook**
+    
+    Manages:
+    - Term progress (`known`, `learning`, `unseen`)
+    - Spaced repetition data (SRS cards)
+    - Streak tracking
+    - Achievements
+    - ELI5 mode toggle
+    - Statistics (total cards viewed, logo clicks)
+    
+    Key functions:
+    ```ts
+    markTerm(termId, status)       // Classic mode
+    reviewCard(termId, quality)    // SRS mode
+    getSrsStudyQueue(categoryId)   // Get study queue
+    updateStreak()                 // Update daily streak
+    ```
+    
+    Located at: `~/workspace/source/src/hooks/useProgress.ts:1`
+  </Tab>
+  
+  <Tab title="useDailyGoals.ts">
+    **Daily goal system**
+    
+    Tracks:
+    - Cards studied today
+    - Daily goal target
+    - Goal completion status
+    - Progress percentage
+    
+    Persists goal settings and daily progress separately.
+  </Tab>
+  
+  <Tab title="useSpeech.ts">
+    **Text-to-speech integration**
+    
+    Provides:
+    - Term pronunciation
+    - Definition reading
+    - Browser speech synthesis API
+    - Voice and speed controls
+  </Tab>
+  
+  <Tab title="use-mobile.tsx">
+    **Responsive breakpoint detection**
+    
+    Returns:
+    ```ts
+    const isMobile = useMobile(); // true if < 768px
+    ```
+    
+    Uses matchMedia API for accurate detection.
+  </Tab>
+</Tabs>
+
+## Library Directory (`src/lib/`)
+
+Utility functions and algorithms:
+
+```
+lib/
+├── sm2.ts                  # Spaced Repetition System (SM-2 algorithm)
+├── utils.ts                # General utilities (cn, classNames)
+├── safeJson.ts             # Safe JSON parsing with fallbacks
+├── share.ts                # Native share functionality
+├── date.ts                 # Date manipulation helpers
+├── array.ts                # Array utilities (shuffle, etc.)
+└── logger.ts               # Logging utilities
+```
+
+### Key Utilities
+
+<AccordionGroup>
+  <Accordion title="sm2.ts - Spaced Repetition Algorithm">
+    Implements the SuperMemo 2 (SM-2) algorithm for optimized learning.
+    
+    **Core functions:**
+    ```ts
+    initializeCard(termId: number): SRSCard
+    processReview(card: SRSCard, quality: number): SRSCard
+    getDueCards(cards: Record<number, SRSCard>): SRSCard[]
+    getStudyQueue(termIds: number[], cards, limit): number[]
+    getRetentionStats(cards): Stats
+    getMasteryLevel(card): 'new' | 'learning' | 'reviewing' | 'mastered'
+    ```
+    
+    **Quality ratings:**
+    - 0: Complete blackout
+    - 1: Wrong, but recognized
+    - 2: Wrong, seemed easy
+    - 3: Correct with difficulty
+    - 4: Correct with hesitation
+    - 5: Perfect recall
+    
+    Location: `~/workspace/source/src/lib/sm2.ts:1`
+  </Accordion>
+  
+  <Accordion title="utils.ts - Tailwind Class Management">
+    ```ts
+    import { cn } from "@/lib/utils";
+    
+    // Merge Tailwind classes intelligently
+    cn("px-4 py-2", "px-6")  // Result: "px-6 py-2"
+    ```
+    
+    Combines:
+    - `clsx` - Conditional class names
+    - `tailwind-merge` - Deduplicates conflicting classes
+  </Accordion>
+  
+  <Accordion title="safeJson.ts - Error-Safe Parsing">
+    ```ts
+    import { safeJsonParse } from "@/lib/safeJson";
+    
+    // Returns fallback instead of throwing
+    const data = safeJsonParse(localStorage.getItem('key'), []);
+    ```
+    
+    Prevents crashes from corrupted localStorage.
+  </Accordion>
+  
+  <Accordion title="share.ts - Native Sharing">
+    ```ts
+    import { shareProgress } from "@/lib/share";
+    
+    // Uses Capacitor Share plugin on mobile, fallback on web
+    await shareProgress({
+      title: "My Vocab Vault Progress",
+      text: "I've learned 150 terms!",
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="date.ts - Date Helpers">
+    ```ts
+    import { getLocalDateKey, diffDateKeys } from "@/lib/date";
+    
+    // Get YYYY-MM-DD in user's timezone
+    const today = getLocalDateKey();  // "2026-03-03"
+    
+    // Days between date keys
+    const diff = diffDateKeys("2026-03-03", "2026-03-01");  // 2
+    ```
+    
+    Crucial for streak calculations across timezones.
+  </Accordion>
+</AccordionGroup>
+
+## Data Directory (`src/data/`)
+
+Static data and configuration:
+
+```
+data/
+├── vocabulary.ts           # 600+ terms across 24 categories
+└── achievements.ts         # Achievement definitions and conditions
+```
+
+### Vocabulary Structure
+
+**Type definitions:**
+
+```ts
+interface Term {
+  id: number;
+  term: string;
+  definition: string;
+  eli5Definition?: string;    // Simplified definition
+  category: string;
+  example?: string;           // ASCII visual example
+}
+
+const categories = [
+  {
+    id: "foundation",
+    name: "Foundation",
+    subtitle: "Core Concepts",
+    icon: "architecture",
+    abbrev: "FDN",
+    colorClass: "bg-category-yellow"
+  },
+  // ... 23 more categories
+];
+```
+
+**Categories (24 total):**
+- Foundation, APIs, Code, Development, Git, Cloud
+- UI/UX, CSS, AI, No-Code, Money, Tools
+- Shortcuts, Security, Debugging, Analytics
+- Mobile, Data, SEO, Testing, Architecture
+- Hosting, AI Tools, Package
+
+**Term example:**
+
+```ts
+{
+  id: 1,
+  term: "Vibe Coding",
+  definition: "Building apps by describing what you want to AI, instead of writing code yourself",
+  eli5Definition: "Telling a robot what to build and it builds it for you - like magic!",
+  category: "foundation"
+}
+```
+
+Location: `~/workspace/source/src/data/vocabulary.ts:1`
+
+### Achievements Structure
+
+```ts
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  condition: (stats: UserStats) => boolean;
+}
+
+const ACHIEVEMENTS = [
+  {
+    id: "first_card",
+    title: "First Step",
+    description: "View your first flashcard",
+    icon: "👀",
+    condition: (stats) => stats.totalCardsViewed >= 1
+  },
+  // ... more achievements
+];
+```
+
+## Pages Directory (`src/pages/`)
+
+Route-level components:
+
+```
+pages/
+├── Index.tsx               # Main app page (home/dashboard)
+└── NotFound.tsx            # 404 error page
+```
+
+**Index.tsx:**
+Contains the entire app experience:
+- Category selection grid
+- Study mode (classic + SRS)
+- Search functionality
+- Modals (stats, achievements, settings)
+
+**NotFound.tsx:**
+Catch-all route for invalid URLs.
+
+## Configuration Files
+
+### vite.config.ts
+
+Build configuration from `~/workspace/source/vite.config.ts:1`:
+
+```ts
+export default defineConfig(({ mode }) => ({
+  server: {
+    host: "::",
+    port: 8080,
+  },
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+    mode === "production" && visualizer(),
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('vocabulary.ts')) return 'vocabulary';
+          if (id.includes('framer-motion')) return 'vendor-framer';
+          if (id.includes('node_modules')) return 'vendor';
+        },
+      },
+    },
+  },
+}));
+```
+
+**Key settings:**
+- `@` alias for cleaner imports (`@/components/ui/button`)
+- Code splitting for vocabulary and animations
+- Development plugins for debugging
+- Production bundle analysis
+
+### capacitor.config.ts
+
+Native app configuration from `~/workspace/source/capacitor.config.ts:1`:
+
+```ts
+const config: CapacitorConfig = {
+  appId: 'com.dbcreations.vocabvault',
+  appName: 'Vocab Vault',
+  webDir: 'dist'
+};
+```
+
+**What this does:**
+- `appId`: Unique identifier for app stores
+- `appName`: Display name on device
+- `webDir`: Where Vite builds to (`dist/`)
+
+### tailwind.config.ts
+
+Design system configuration from `~/workspace/source/tailwind.config.ts:1`:
+
+```ts
+export default {
+  darkMode: ["class"],
+  content: ["./src/**/*.{ts,tsx}"],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        display: ["Space Grotesk", "sans-serif"],
+      },
+      colors: {
+        category: { /* 24 colors */ },
+        // ... semantic colors
+      },
+      borderRadius: {
+        xl: "1.5rem",
+        "2xl": "2rem",
+      },
+    },
+  },
+};
+```
+
+## File Naming Conventions
+
+<CardGroup cols={2}>
+  <Card title="Components" icon="react">
+    **PascalCase.tsx**
+    
+    Examples:
+    - `FlashCard.tsx`
+    - `CategoryCard.tsx`
+    - `AchievementPopup.tsx`
+  </Card>
+  
+  <Card title="Hooks" icon="code">
+    **camelCase.ts**
+    
+    Examples:
+    - `useProgress.ts`
+    - `useDailyGoals.ts`
+    - `use-mobile.tsx`
+  </Card>
+  
+  <Card title="Utilities" icon="wrench">
+    **camelCase.ts**
+    
+    Examples:
+    - `utils.ts`
+    - `safeJson.ts`
+    - `sm2.ts`
+  </Card>
+  
+  <Card title="Data" icon="database">
+    **camelCase.ts**
+    
+    Examples:
+    - `vocabulary.ts`
+    - `achievements.ts`
+  </Card>
+</CardGroup>
+
+## Import Aliases
+
+The `@` alias points to `src/`:
+
+```tsx
+// Instead of:
+import { Button } from "../../../components/ui/button";
+
+// Use:
+import { Button } from "@/components/ui/button";
+```
+
+**Common patterns:**
+
+```tsx
+import { FlashCard } from "@/components/FlashCard";
+import { Button } from "@/components/ui/button";
+import { useProgress } from "@/hooks/useProgress";
+import { cn } from "@/lib/utils";
+import { terms } from "@/data/vocabulary";
+```
+
+## Build Output (`dist/`)
+
+Production build structure:
+
+```
+dist/
+├── index.html              # Entry HTML
+├── assets/
+│   ├── index-[hash].js    # Main app bundle
+│   ├── vocabulary-[hash].js  # Vocabulary data chunk
+│   ├── vendor-[hash].js   # Dependencies
+│   ├── vendor-framer-[hash].js  # Framer Motion
+│   └── index-[hash].css   # Compiled Tailwind
+└── stats.html              # Bundle analyzer (prod only)
+```
+
+**Hash-based filenames:**
+Enable aggressive caching - new deploy = new hash = cache bust.
+
+## Native Projects
+
+### Android (`android/`)
+
+Generated by Capacitor:
+
+```
+android/
+├── app/
+│   ├── src/main/
+│   │   ├── assets/www/    # Synced from dist/
+│   │   ├── res/           # App icons, splash screens
+│   │   └── AndroidManifest.xml
+│   └── build.gradle
+└── build.gradle
+```
+
+<Warning>
+Don't manually edit `assets/www/` - it's overwritten by `npx cap sync`
+</Warning>
+
+**Sync process:**
+```bash
+npm run build              # Build web assets to dist/
+npx cap sync android       # Copy dist/ to android/app/src/main/assets/www/
+```
+
+## Adding New Files
+
+### New Component
+
+```bash
+# Create component
+touch src/components/NewFeature.tsx
+```
+
+```tsx
+// src/components/NewFeature.tsx
+import { useProgress } from "@/hooks/useProgress";
+import { Button } from "@/components/ui/button";
+
+export function NewFeature() {
+  const { progress } = useProgress();
+  
+  return (
+    <div className="p-4">
+      <Button>Action</Button>
+    </div>
+  );
+}
+```
+
+### New Hook
+
+```bash
+touch src/hooks/useNewFeature.ts
+```
+
+```ts
+// src/hooks/useNewFeature.ts
+import { useState, useEffect } from 'react';
+import { Preferences } from '@capacitor/preferences';
+
+export function useNewFeature() {
+  const [state, setState] = useState<string>('');
+  
+  useEffect(() => {
+    // Load from storage
+    const load = async () => {
+      const { value } = await Preferences.get({ key: 'newFeature' });
+      if (value) setState(value);
+    };
+    load();
+  }, []);
+  
+  return { state, setState };
+}
+```
+
+### New Utility
+
+```bash
+touch src/lib/newUtil.ts
+```
+
+```ts
+// src/lib/newUtil.ts
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat('en-US').format(num);
+}
+```
+
+## Testing Structure
+
+```
+src/
+├── test/
+│   ├── setup.ts           # Test environment setup
+│   └── utils.tsx          # Test utilities
+└── [component].test.tsx   # Tests alongside components
+```
+
+**Example test:**
+
+```tsx
+// src/components/FlashCard.test.tsx
+import { render, screen } from '@testing-library/react';
+import { FlashCard } from './FlashCard';
+
+test('renders term', () => {
+  render(<FlashCard term={{ id: 1, term: "API", ... }} />);
+  expect(screen.getByText('API')).toBeInTheDocument();
+});
+```
+
+## Environment Variables
+
+Vite uses `.env` files:
+
+```bash
+# .env.local (git-ignored)
+VITE_API_KEY=abc123
+```
+
+```ts
+// Access in code
+const apiKey = import.meta.env.VITE_API_KEY;
+```
+
+<Note>
+Prefix with `VITE_` to expose to client-side code.
+</Note>
+
+## Best Practices
+
+<Steps>
+  <Step title="Keep components small">
+    Break down complex components into smaller, focused pieces.
+    
+    ```tsx
+    // Good
+    <StudyMode>
+      <StudyHeader />
+      <FlashCard />
+      <StudyFooter />
+    </StudyMode>
+    
+    // Avoid
+    <StudyMode> {/* 500 lines */} </StudyMode>
+    ```
+  </Step>
+  
+  <Step title="Colocate related files">
+    Keep tests, types, and utilities near the components that use them.
+  </Step>
+  
+  <Step title="Use barrel exports sparingly">
+    Avoid `index.ts` files that re-export everything - they can slow down builds.
+  </Step>
+  
+  <Step title="Organize imports">
+    Group imports by category:
+    ```tsx
+    // 1. External dependencies
+    import { useState } from 'react';
+    import { motion } from 'framer-motion';
+    
+    // 2. Internal absolute imports
+    import { Button } from '@/components/ui/button';
+    import { useProgress } from '@/hooks/useProgress';
+    
+    // 3. Relative imports
+    import { LocalComponent } from './LocalComponent';
+    ```
+  </Step>
+</Steps>
+
+---
+
+<Info>
+This structure scales from 1 developer to a small team while keeping the codebase navigable and maintainable.
+</Info>

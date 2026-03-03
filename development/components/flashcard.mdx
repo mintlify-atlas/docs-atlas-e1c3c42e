@@ -1,0 +1,185 @@
+---
+title: FlashCard Component
+description: Interactive flashcard component with flip animations and swipe gestures for vocabulary learning
+---
+
+The `FlashCard` component is an interactive, animated flashcard that displays vocabulary terms with their definitions. It supports flip animations, swipe gestures, and text-to-speech functionality.
+
+## Features
+
+- **Flip Animation**: Click or swipe left to flip between term and definition
+- **Swipe Gestures**: Swipe right to mark as known, swipe left to flip
+- **Text-to-Speech**: Listen to term pronunciation and definition
+- **ELI5 Mode**: Display simplified definitions for complex terms
+- **Visual Feedback**: Glowing effects during swipe gestures
+- **Responsive Design**: Adapts to different screen sizes
+
+## Props
+
+<ParamField path="term" type="Term" required>
+  The vocabulary term object containing:
+  - `term` (string): The vocabulary word
+  - `definition` (string): Standard definition
+  - `eli5Definition` (string, optional): Simplified explanation
+  - `example` (string, optional): ASCII visual example
+</ParamField>
+
+<ParamField path="cardNumber" type="number" required>
+  Current card number in the deck (displayed as "Term #01", "Term #02", etc.)
+</ParamField>
+
+<ParamField path="totalCards" type="number" required>
+  Total number of cards in the current category
+</ParamField>
+
+<ParamField path="categoryColor" type="string" required>
+  Tailwind CSS color class for the card background (e.g., `"bg-gradient-to-br from-blue-400 to-indigo-500"`)
+</ParamField>
+
+<ParamField path="eli5Mode" type="boolean" default="false">
+  When enabled, displays simplified definitions instead of standard definitions
+</ParamField>
+
+<ParamField path="onSwipeRight" type="() => void">
+  Callback function triggered when user swipes right. Used to mark card as known and advance to next card.
+</ParamField>
+
+<ParamField path="onSwipeLeft" type="() => void">
+  Optional callback function triggered when user swipes left to flip the card
+</ParamField>
+
+## Ref Methods
+
+The component exposes a `FlashCardRef` interface via `forwardRef`:
+
+<ParamField path="flip" type="() => void">
+  Programmatically flip the card. Useful for keyboard shortcuts.
+</ParamField>
+
+## Usage Example
+
+```tsx
+import { useRef } from 'react';
+import { FlashCard, FlashCardRef } from '@/components/FlashCard';
+
+const term = {
+  term: 'API',
+  definition: 'Application Programming Interface - a set of protocols and tools for building software applications',
+  eli5Definition: 'Like a menu at a restaurant - it shows you what you can ask for and how to ask for it',
+  example: `Client ──→ API ──→ Server\n         ←──     ←──\n       Request  Response`
+};
+
+function StudySession() {
+  const cardRef = useRef<FlashCardRef>(null);
+
+  const handleKeyPress = (e: KeyboardEvent) => {
+    if (e.key === 'f') {
+      cardRef.current?.flip();
+    }
+  };
+
+  return (
+    <FlashCard
+      ref={cardRef}
+      term={term}
+      cardNumber={1}
+      totalCards={50}
+      categoryColor="bg-gradient-to-br from-blue-400 to-indigo-500"
+      eli5Mode={false}
+      onSwipeRight={() => console.log('Card marked as known')}
+    />
+  );
+}
+```
+
+## Swipe Gestures
+
+The component uses Framer Motion's drag functionality with the following thresholds:
+
+- **Swipe Right (>120px)**: Marks card as known and triggers `onSwipeRight` callback
+- **Swipe Left (&lt;-120px)**: Flips the card to show definition
+- **Below Threshold**: Returns card to center position
+
+### Visual Feedback
+
+- **Green Glow**: Appears when swiping right (indicates "I know this")
+- **Blue Glow**: Appears when swiping left (indicates "flip to definition")
+- **Opacity**: Card opacity decreases as you drag further from center
+
+## Card Structure
+
+### Front Side (Term)
+
+- Category color gradient background
+- Card number indicator (e.g., "TERM #01")
+- Large, bold term display
+- Swipe instructions footer
+- Speaker button for text-to-speech
+- Decorative visual elements
+
+### Back Side (Definition)
+
+- Neutral card background
+- "DEFINITION" label with optional "ELI5" badge
+- Definition text (standard or simplified)
+- ASCII visual example (if provided)
+- Swipe instructions footer
+- Speaker button for text-to-speech
+
+## Text-to-Speech
+
+The component integrates with the `useSpeech` hook:
+
+```tsx
+const { speakTerm, isSpeaking, isSupported, stop } = useSpeech();
+```
+
+- **Front Side**: Speaks only the term
+- **Back Side**: Speaks both term and definition
+- **Visual Indicator**: Button pulses when speaking
+- **Stop Functionality**: Click again to stop speech
+
+## Animations
+
+Powered by Framer Motion:
+
+- **Flip Animation**: 3D rotateY transform with spring physics
+- **Drag Animation**: Smooth x-axis translation with rotation
+- **Return Animation**: Spring-based return to center
+- **Exit Animation**: Slides out when marked as known
+
+## Accessibility
+
+- Click-to-flip functionality for users who can't swipe
+- Keyboard navigation via exposed `flip()` ref method
+- Speech synthesis support detection
+- High contrast borders and text
+- Semantic HTML structure
+
+## Implementation Notes
+
+### Drag Configuration
+
+```tsx
+drag="x"
+dragConstraints={{ left: 0, right: 0 }}
+dragElastic={0.7}
+```
+
+- Restricts dragging to horizontal axis only
+- Elastic drag feel with 0.7 resistance
+- Constraints prevent permanent displacement
+
+### Motion Transforms
+
+```tsx
+const rotate = useTransform(x, [-200, 200], [-25, 25]);
+const cardOpacity = useTransform(x, [-300, -200, 0, 200, 300], [0.3, 0.7, 1, 0.7, 0.3]);
+const rightGlowOpacity = useTransform(x, [0, DRAG_THRESHOLD], [0, 0.8]);
+```
+
+These transforms create smooth visual feedback as the user drags the card.
+
+## Source Code Reference
+
+See the full implementation in `/workspace/source/src/components/FlashCard.tsx`

@@ -1,0 +1,265 @@
+---
+title: ELI5 Mode
+description: Simplify complex technical terms with "Explain Like I'm 5" definitions for easier learning.
+---
+
+ELI5 Mode (Explain Like I'm 5) replaces technical definitions with simplified, beginner-friendly explanations. Perfect for newcomers or when you want to understand the core concept without jargon.
+
+## What is ELI5 Mode?
+
+ELI5 Mode transforms complex technical vocabulary into simple, relatable explanations:
+
+<CodeGroup>
+```text Standard Definition
+Backend: The hidden part - databases, user accounts, server logic
+```
+
+```text ELI5 Definition
+Backend: The kitchen in a restaurant - you can't see it but that's where the magic happens
+```
+</CodeGroup>
+
+## How to Enable ELI5 Mode
+
+1. Navigate to Settings or your Profile
+2. Toggle "ELI5 Mode" switch
+3. Setting persists across sessions (saved to local storage)
+
+```tsx
+const toggleEli5Mode = async () => {
+  const newMode = !eli5Mode;
+  setEli5Mode(newMode);
+  await Preferences.set({ key: ELI5_KEY, value: JSON.stringify(newMode) });
+};
+```
+
+## Where ELI5 Appears
+
+ELI5 definitions appear throughout the app:
+
+### Flashcards
+When flipping a card, the back shows the ELI5 definition with a special badge:
+
+```tsx
+<p className="font-display font-bold text-xl">
+  {eli5Mode && term.eli5Definition ? term.eli5Definition : term.definition}
+</p>
+
+{eli5Mode && term.eli5Definition && (
+  <span className="bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-3 py-1 rounded-full font-black">
+    ELI5
+  </span>
+)}
+```
+
+The amber "ELI5" badge clearly indicates you're viewing simplified content.
+
+### Quiz Mode
+Quiz questions still show standard definitions (to maintain consistency in testing), but review screens can show ELI5 explanations.
+
+### Term Lists
+Any place terms are displayed will respect the ELI5 mode setting.
+
+## ELI5 Examples
+
+Here are some examples of how ELI5 Mode simplifies vocabulary:
+
+<AccordionGroup>
+  <Accordion title="API">
+    **Standard**: A way for apps to talk to each other - like a waiter taking your order to the kitchen. Stands for Application Programming Interface.
+    
+    **ELI5**: A waiter that takes your order to the kitchen and brings back your food
+  </Accordion>
+
+  <Accordion title="Deploy">
+    **Standard**: Making your app available on the internet for others to use
+    
+    **ELI5**: Putting your Lego creation on display for everyone to see
+  </Accordion>
+
+  <Accordion title="Environment Variables">
+    **Standard**: Secret settings stored outside your code (like API keys)
+    
+    **ELI5**: Secret notes your app reads but never shows to the public
+  </Accordion>
+
+  <Accordion title="Flexbox">
+    **Standard**: Layout system for arranging items in a row or column. Uses display: flex.
+    
+    **ELI5**: A magical rubber band that stretches and squishes items to fit in a line
+  </Accordion>
+
+  <Accordion title="Hallucination (AI)">
+    **Standard**: When AI confidently makes stuff up. Sounds right but isn't true.
+    
+    **ELI5**: When the AI makes something up but says it like it's true
+  </Accordion>
+</AccordionGroup>
+
+## Design Philosophy
+
+ELI5 definitions follow specific guidelines:
+
+### Use Analogies
+Compare technical concepts to everyday experiences:
+- Backend = Restaurant kitchen
+- Repository = Google Docs with version history
+- Localhost = Your computer pretending to be a website
+
+### Avoid Jargon
+No technical terms in ELI5 definitions. If you must use a technical word, explain it simply.
+
+❌ **Bad ELI5**: "A function that handles HTTP requests asynchronously"
+✅ **Good ELI5**: "A worker that answers questions from the internet"
+
+### Keep It Short
+ELI5 definitions should be shorter than standard definitions. One sentence is ideal.
+
+### Be Accurate
+Simplified doesn't mean wrong. ELI5 definitions should capture the core concept correctly.
+
+## Term Coverage
+
+Not every term has an ELI5 definition. The data structure supports optional ELI5:
+
+```typescript
+export interface Term {
+  id: number;
+  term: string;
+  definition: string;
+  eli5Definition?: string; // Optional
+  category: string;
+  example?: string;
+}
+```
+
+Terms without ELI5 definitions will show the standard definition even when ELI5 Mode is enabled.
+
+From the source data, most core terms (especially in Foundation, Development, and UI/UX categories) include ELI5 definitions.
+
+## When to Use ELI5 Mode
+
+<CardGroup cols={2}>
+  <Card title="Starting Out" icon="seedling">
+    New to programming? Enable ELI5 Mode to build intuition before diving into technical details.
+  </Card>
+  <Card title="Teaching Others" icon="chalkboard-teacher">
+    Explaining concepts to someone non-technical? ELI5 Mode provides ready-made analogies.
+  </Card>
+  <Card title="Quick Review" icon="clock">
+    Need a fast refresher? ELI5 definitions are quicker to scan and remember.
+  </Card>
+  <Card title="Concept Building" icon="lightbulb">
+    Struggling with a complex term? Start with ELI5 to understand the essence, then switch to standard for details.
+  </Card>
+</CardGroup>
+
+## When to Use Standard Mode
+
+<Warning>
+ELI5 Mode is a learning tool, not a replacement for technical understanding. For professional work, you'll need to know standard definitions.
+</Warning>
+
+Switch to Standard Mode when:
+- Preparing for technical interviews
+- Writing documentation
+- Communicating with other developers
+- Learning precise technical details
+- Taking quizzes (to match real-world usage)
+
+## Persistence
+
+Your ELI5 Mode preference is saved locally:
+
+```tsx
+const ELI5_KEY = 'vocabVaultEli5Mode';
+
+// Saved to device storage
+await Preferences.set({ 
+  key: ELI5_KEY, 
+  value: JSON.stringify(eli5Mode) 
+});
+
+// Loaded on app startup
+const { value: eli5Stored } = await Preferences.get({ key: ELI5_KEY });
+setEli5Mode(safeJsonParse(eli5Stored, false));
+```
+
+Your setting persists across:
+- App restarts
+- Browser refreshes
+- Sessions
+- Device restarts (on mobile)
+
+## Accessibility Benefits
+
+ELI5 Mode supports accessibility:
+
+### Cognitive Accessibility
+- Reduces cognitive load for neurodivergent learners
+- Simplifies complex concepts for those with learning differences
+- Provides multiple pathways to understanding
+
+### Language Accessibility
+- Helpful for non-native English speakers
+- Uses simpler vocabulary and sentence structures
+- Relies on universal concepts (food, games, everyday objects)
+
+### Learning Styles
+- Visual learners benefit from concrete analogies
+- Metaphorical thinking supports creative learning styles
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Toggle Between Modes">
+    Don't stay in ELI5 Mode forever. Read the ELI5 version first to understand the concept, then switch to standard mode to learn the technical definition.
+  </Accordion>
+
+  <Accordion title="Use for First Pass">
+    On your first review of a category, use ELI5 Mode. On subsequent reviews, switch to standard mode to reinforce technical vocabulary.
+  </Accordion>
+
+  <Accordion title="Teach Back Test">
+    If you can explain a term in your own words (like ELI5 does), you truly understand it. Use ELI5 as inspiration for your own explanations.
+  </Accordion>
+
+  <Accordion title="Compare Definitions">
+    Toggle ELI5 Mode on and off while viewing the same card to see both definitions. This reinforces the connection between simple and technical explanations.
+  </Accordion>
+</AccordionGroup>
+
+## Creating Your Own ELI5 Definitions
+
+Inspired to create your own ELI5 definitions? Follow these steps:
+
+1. **Identify the core concept**: What is the ONE most important thing this term describes?
+2. **Find an analogy**: What everyday thing works similarly?
+3. **Test it**: Would a 5-year-old (or your non-technical friend) understand?
+4. **Refine**: Remove any technical words that slipped in
+
+Example process:
+- **Term**: Git Branch
+- **Core concept**: Separate copy to experiment safely
+- **Analogy**: Making a copy of your drawing to try different colors
+- **Test**: "It's like making a copy of your drawing to try weird colors without ruining the original"
+- **Refine**: ✅ No technical terms, clear analogy, accurate
+
+## Technical Implementation
+
+ELI5 Mode is a global state managed by the `useProgress` hook:
+
+```tsx
+const { eli5Mode, toggleEli5Mode } = useProgress();
+
+// Pass to components
+<FlashCard
+  term={term}
+  eli5Mode={eli5Mode}
+/>
+
+// Components check the prop
+{eli5Mode && term.eli5Definition ? term.eli5Definition : term.definition}
+```
+
+This ensures consistent behavior across all features.

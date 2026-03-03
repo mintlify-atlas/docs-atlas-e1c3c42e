@@ -1,0 +1,213 @@
+---
+title: Building and Running Locally
+description: Learn how to set up, build, and run Vocab Vault on your local development environment
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** (version 18 or higher recommended)
+- **npm**, **yarn**, or **pnpm** package manager
+- **Git** for version control
+
+## Installation
+
+<Steps>
+  <Step title="Clone the repository">
+    First, clone the Vocab Vault repository to your local machine:
+
+    ```bash
+    git clone <repository-url>
+    cd vocab-vault-alpha
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all required dependencies using your preferred package manager:
+
+    <CodeGroup>
+      ```bash npm
+      npm install
+      ```
+
+      ```bash yarn
+      yarn install
+      ```
+
+      ```bash pnpm
+      pnpm install
+      ```
+    </CodeGroup>
+
+    <Note>
+      The `postinstall` script will automatically run `patch-package` to apply any necessary patches to dependencies.
+    </Note>
+  </Step>
+</Steps>
+
+## Development Server
+
+To start the development server with hot module replacement (HMR):
+
+<CodeGroup>
+  ```bash npm
+  npm run dev
+  ```
+
+  ```bash yarn
+  yarn dev
+  ```
+
+  ```bash pnpm
+  pnpm dev
+  ```
+</CodeGroup>
+
+The development server will start on `http://localhost:8080` by default. The server is configured to:
+
+- Listen on all network interfaces (`::`)
+- Disable the HMR overlay for a cleaner development experience
+- Provide fast refresh with SWC compilation
+
+## Building for Production
+
+### Standard Production Build
+
+Create an optimized production build:
+
+<CodeGroup>
+  ```bash npm
+  npm run build
+  ```
+
+  ```bash yarn
+  yarn build
+  ```
+
+  ```bash pnpm
+  pnpm build
+  ```
+</CodeGroup>
+
+This command:
+- Compiles TypeScript and bundles all assets
+- Optimizes and minifies code for production
+- Outputs to the `dist/` directory
+- Generates bundle visualization in `dist/stats.html`
+- Creates optimized chunks:
+  - `vocabulary` - Vocabulary data for better caching
+  - `vendor` - Third-party dependencies
+  - `vendor-framer` - Framer Motion library (separated due to size)
+
+### Development Build
+
+For debugging purposes, you can create a build in development mode:
+
+<CodeGroup>
+  ```bash npm
+  npm run build:dev
+  ```
+
+  ```bash yarn
+  yarn build:dev
+  ```
+
+  ```bash pnpm
+  pnpm build:dev
+  ```
+</CodeGroup>
+
+This build includes source maps and debugging information.
+
+## Preview Production Build
+
+To preview the production build locally:
+
+<CodeGroup>
+  ```bash npm
+  npm run preview
+  ```
+
+  ```bash yarn
+  yarn preview
+  ```
+
+  ```bash pnpm
+  pnpm preview
+  ```
+</CodeGroup>
+
+This serves the `dist/` directory and allows you to test the production build before deployment.
+
+## Code Quality
+
+### Linting
+
+Run ESLint to check for code quality issues:
+
+<CodeGroup>
+  ```bash npm
+  npm run lint
+  ```
+
+  ```bash yarn
+  yarn lint
+  ```
+
+  ```bash pnpm
+  pnpm lint
+  ```
+</CodeGroup>
+
+## Project Structure
+
+The project uses the following key technologies:
+
+- **Vite** - Build tool and dev server
+- **React** + **TypeScript** - UI framework and type safety
+- **Tailwind CSS** - Styling
+- **SWC** - Fast compilation
+- **Path aliases** - `@/` maps to `./src/` for cleaner imports
+
+## Troubleshooting
+
+### Port Already in Use
+
+If port 8080 is already in use, you can specify a different port:
+
+```bash
+vite --port 3000
+```
+
+### Dependency Issues
+
+If you encounter dependency issues:
+
+1. Clear node_modules and reinstall:
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+2. Ensure `patch-package` runs successfully during installation
+
+### Build Errors
+
+- **TypeScript errors**: Run `npx tsc --noEmit` to check for type errors
+- **Out of memory**: Increase Node.js memory limit:
+  ```bash
+  NODE_OPTIONS="--max-old-space-size=4096" npm run build
+  ```
+
+### HMR Not Working
+
+If hot module replacement isn't working:
+
+1. Check that the dev server is running on the expected port
+2. Try restarting the dev server
+3. Clear browser cache and reload
+
+<Tip>
+  Use the bundle visualization at `dist/stats.html` after production builds to analyze bundle size and optimize your build.
+</Tip>

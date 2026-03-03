@@ -1,0 +1,245 @@
+---
+title: Daily Streaks
+description: Build momentum and stay motivated with daily study streaks that track your learning consistency
+---
+
+Daily streaks reward you for studying consistently every day. They're one of the most powerful motivational tools in Vocab Vault.
+
+## How Streaks Work
+
+Your streak counts the number of consecutive days you've studied:
+
+- Study today → Your streak increases by 1
+- Skip a day → Your streak resets to 0
+- Study again → Start building a new streak
+
+<Info>
+  A "study day" means reviewing at least one flashcard. Quality matters more than quantity—even 5 minutes counts!
+</Info>
+
+## Streak Levels
+
+As your streak grows, unlock special achievements:
+
+<Steps>
+  <Step title="Day 3: Heating Up" icon="fire">
+    You're building momentum! The habit is forming.
+  </Step>
+  <Step title="Day 7: On Fire" icon="fire-flame-curved">
+    One full week! You've proven commitment.
+  </Step>
+  <Step title="Day 30: Monthly Master" icon="calendar">
+    An entire month of daily practice. You're unstoppable!
+  </Step>
+</Steps>
+
+## Why Streaks Work
+
+Streaks are effective because they leverage key psychological principles:
+
+### 1. Loss Aversion
+
+Once you've built a streak, you don't want to lose it. This motivates you to maintain your practice even on busy days.
+
+<Tip>
+  Even on your busiest days, reviewing just 5 cards is enough to maintain your streak and keep the momentum going.
+</Tip>
+
+### 2. Habit Formation
+
+Research shows it takes 21-66 days to form a habit. Daily streaks help you push through the critical first month until studying becomes automatic.
+
+### 3. Visual Progress
+
+Seeing your streak number grow provides immediate positive feedback. It's a tangible measure of your dedication.
+
+### 4. Gamification
+
+Streaks add a game-like element to learning, making it more engaging and fun.
+
+## Streak Tracking Implementation
+
+The streak system uses local timezone-aware date tracking:
+
+```typescript
+interface StreakData {
+  streak: number;
+  lastStudyDate: string | null; // YYYY-MM-DD format
+}
+```
+
+### How Streak Updates Work
+
+When you study, the app checks:
+
+1. **Same day**: If you already studied today, streak stays the same
+2. **Next day**: If it's been exactly 1 day, streak increases by 1
+3. **Gap**: If you missed a day (or more), streak resets to 1
+
+```typescript
+const updateStreak = useCallback(async () => {
+  const today = getLocalDateKey();
+  const { value: streakStored } = await Preferences.get({ key: STREAK_KEY });
+  const streakData = safeJsonParse<StreakData>(streakStored, { streak: 0, lastStudyDate: null });
+
+  if (streakData.lastStudyDate === today) return;
+
+  let newStreak = 1;
+  if (streakData.lastStudyDate) {
+    const diffDays = diffDateKeys(today, streakData.lastStudyDate);
+    if (diffDays === 1) newStreak = streakData.streak + 1;
+  }
+
+  const newStreakData = { streak: newStreak, lastStudyDate: today };
+  await Preferences.set({ key: STREAK_KEY, value: JSON.stringify(newStreakData) });
+  setStreak(newStreak);
+}, []);
+```
+
+### Timezone Handling
+
+The app uses local dates (not UTC) to ensure:
+
+- Your streak updates at midnight in **your timezone**
+- Travel across timezones doesn't break your streak unexpectedly
+- Date calculations are based on calendar days, not 24-hour periods
+
+<Warning>
+  If you change timezones dramatically (e.g., international travel), the app normalizes the streak without breaking it to avoid penalizing you for device clock changes.
+</Warning>
+
+## Streak Display
+
+Your current streak appears:
+
+- In the top navigation bar with a fire emoji 🔥
+- On achievement cards for streak-based achievements
+- In the daily goal widget when you complete your goal
+
+```tsx
+{isComplete && streak > 1 && (
+  <span className="text-amber-500 font-bold">🔥 {streak} day streak</span>
+)}
+```
+
+## Streak-Related Achievements
+
+Three achievements are tied directly to streaks:
+
+<CardGroup cols={3}>
+  <Card title="Heating Up" icon="fire">
+    **3-day streak**
+    
+    Your first milestone. Keep going!
+  </Card>
+  <Card title="On Fire" icon="fire-flame-curved">
+    **7-day streak**
+    
+    One week of consistency!
+  </Card>
+  <Card title="Monthly Master" icon="calendar">
+    **30-day streak**
+    
+    The ultimate achievement.
+  </Card>
+</CardGroup>
+
+## Integration with Daily Goals
+
+Streaks and daily goals work together:
+
+- Daily goals define how many cards you want to study
+- Streaks track how many consecutive days you've studied
+- The daily goal widget shows your streak when you complete your goal
+
+<Tip>
+  Set a realistic daily goal (like 10 cards) to make streak-building sustainable long-term.
+</Tip>
+
+## Best Practices for Maintaining Streaks
+
+<AccordionGroup>
+  <Accordion title="Set a specific time">
+    Pick the same time each day to study. Morning routines often work best because they're less likely to be disrupted.
+  </Accordion>
+  <Accordion title="Start small">
+    Begin with just 5-10 cards per day. It's easier to maintain a small streak than to burn out on an ambitious one.
+  </Accordion>
+  <Accordion title="Use reminders">
+    Enable daily goal reminders to get notified if you haven't studied yet.
+  </Accordion>
+  <Accordion title="Plan for busy days">
+    Know you'll be busy? Study in advance in the morning, or set aside just 2 minutes before bed.
+  </Accordion>
+  <Accordion title="Don't obsess">
+    If you break a streak, don't give up! Start a new one immediately. The learning matters more than the number.
+  </Accordion>
+</AccordionGroup>
+
+## Recovery from Broken Streaks
+
+If you break your streak:
+
+1. **Don't be discouraged**: Everyone breaks streaks sometimes
+2. **Start immediately**: Begin a new streak today
+3. **Learn from it**: What caused the break? How can you prevent it next time?
+4. **Focus on habits**: The daily practice habit you've built is what really matters
+
+<Note>
+  The goal isn't a perfect infinite streak—it's building a sustainable daily learning habit.
+</Note>
+
+## Streak Storage
+
+Streak data is stored locally using Capacitor Preferences:
+
+```typescript
+const STREAK_KEY = 'vocabVaultStreak';
+
+// Save streak
+await Preferences.set({ 
+  key: STREAK_KEY, 
+  value: JSON.stringify({ streak: newStreak, lastStudyDate: today }) 
+});
+
+// Load streak
+const { value: streakStored } = await Preferences.get({ key: STREAK_KEY });
+const streakData = safeJsonParse<StreakData>(streakStored, { 
+  streak: 0, 
+  lastStudyDate: null 
+});
+```
+
+This ensures:
+- Your streak persists between app sessions
+- Data is stored locally on your device
+- Privacy is maintained (no server required)
+
+## Motivation Science
+
+Streaks work because they:
+
+1. **Create accountability**: You're accountable to your past self who built the streak
+2. **Provide instant feedback**: See your number grow immediately
+3. **Build identity**: "I'm someone with a 30-day streak" becomes part of your identity
+4. **Make learning visible**: Abstract learning becomes a concrete, visible achievement
+
+<Quote>
+  "We are what we repeatedly do. Excellence, then, is not an act, but a habit."
+  
+  — Aristotle
+</Quote>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Daily Goals" icon="flag" href="/learning/daily-goals">
+    Set targets for your daily practice
+  </Card>
+  <Card title="Achievements" icon="trophy" href="/learning/achievements">
+    Unlock streak achievements
+  </Card>
+  <Card title="Spaced Repetition" icon="brain" href="/learning/spaced-repetition">
+    Optimize your review schedule
+  </Card>
+</CardGroup>

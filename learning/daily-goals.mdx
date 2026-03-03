@@ -1,0 +1,296 @@
+---
+title: Daily Goals
+description: Set daily study targets, track your progress, and build consistent learning habits with smart goal tracking
+---
+
+Daily goals help you build a sustainable study routine by setting clear, achievable targets for each day.
+
+## Setting Your Daily Goal
+
+Your daily goal defines how many flashcards you want to study each day. The default is **10 cards per day**, but you can customize this based on your schedule and learning pace.
+
+<Tip>
+  Start with a conservative goal (5-10 cards) and increase gradually. It's better to consistently meet a small goal than to repeatedly miss an ambitious one.
+</Tip>
+
+## How Daily Goals Work
+
+The daily goal system tracks:
+
+- **Cards per day**: Your target number of cards to study
+- **Cards studied today**: Running count of cards you've reviewed
+- **Progress percentage**: Visual feedback on your daily progress
+- **Goal completion status**: Whether you've met your goal today
+
+```typescript
+export interface DailyGoal {
+  cardsPerDay: number;
+  reminderEnabled: boolean;
+  reminderHour: number;    // 0-23
+  reminderMinute: number;  // 0-59
+}
+
+interface DailyProgress {
+  date: string;            // YYYY-MM-DD
+  cardsStudied: number;
+  goalMet: boolean;
+}
+```
+
+## Progress Tracking
+
+As you study throughout the day, the widget updates in real-time:
+
+### Compact View
+
+The compact widget appears in the navigation bar:
+
+```tsx
+<motion.button className="flex items-center gap-1.5 px-2 py-1 rounded-full">
+  <span className="material-icons">
+    {isComplete ? 'check_circle' : 'flag'}
+  </span>
+  <span>{todayProgress.cardsStudied}/{goal.cardsPerDay}</span>
+  {isComplete && streak > 1 && (
+    <span className="text-amber-500">🔥{streak}</span>
+  )}
+</motion.button>
+```
+
+Shows:
+- Flag icon (or checkmark when complete)
+- Current count / target count
+- Streak indicator when goal is complete
+
+### Full Widget
+
+The expanded widget shows detailed progress:
+
+- Progress bar with percentage
+- Cards studied vs. target
+- Completion status with celebration
+- Goal streak when applicable
+
+<Frame>
+  <img src="/images/daily-goal-widget.png" alt="Daily goal widget showing progress" />
+</Frame>
+
+## Goal Completion
+
+When you meet your daily goal:
+
+1. ✅ The progress bar turns **green**
+2. 🎉 A checkmark badge appears
+3. 🔥 Your goal streak increments (if you've met your goal on consecutive days)
+4. 💾 Progress is saved to your history
+
+```typescript
+const incrementCardsStudied = useCallback(async (count: number = 1) => {
+  const newCount = todayProgress.cardsStudied + count;
+  const goalMet = newCount >= goal.cardsPerDay;
+  const updated: DailyProgress = {
+    ...todayProgress,
+    cardsStudied: newCount,
+    goalMet,
+  };
+  return { newCount, goalMet, justCompleted: goalMet && !todayProgress.goalMet };
+}, [todayProgress, goal]);
+```
+
+## Goal Streaks
+
+Separate from your overall study streak, goal streaks track consecutive days where you've **met your daily goal**:
+
+```typescript
+const getGoalStreak = useCallback(() => {
+  let streak = todayProgress.goalMet ? 1 : 0;
+  for (const day of history) {
+    if (day.goalMet) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}, [todayProgress, history]);
+```
+
+<Info>
+  Study streaks track any study activity. Goal streaks only count when you hit your target. Both are valuable!
+</Info>
+
+## 30-Day History
+
+The system maintains a rolling 30-day history of your progress:
+
+```typescript
+interface GoalsData {
+  goal: DailyGoal;
+  todayProgress: DailyProgress;
+  history: DailyProgress[];  // Last 30 days
+}
+```
+
+This allows you to:
+- See your consistency over time
+- Identify patterns in your study habits
+- Celebrate streaks and milestone days
+
+## Automatic Daily Reset
+
+At midnight (in your local timezone), the system automatically:
+
+1. Archives yesterday's progress to history
+2. Resets today's card count to 0
+3. Maintains the last 30 days of history
+
+```typescript
+// Check if it's a new day
+const today = getLocalDateKey();
+if (data.todayProgress.date !== today) {
+  // Archive yesterday's progress if it exists
+  if (data.todayProgress.date && data.todayProgress.cardsStudied > 0) {
+    data.history = [data.todayProgress, ...data.history].slice(0, 30);
+  }
+  // Reset today's progress
+  data.todayProgress = { date: today, cardsStudied: 0, goalMet: false };
+}
+```
+
+## Reminder Notifications
+
+Set optional daily reminders to maintain consistency:
+
+- **Reminder enabled**: Toggle reminders on/off
+- **Reminder time**: Choose when to receive your notification (hour and minute)
+
+<Note>
+  Reminders help establish a consistent study time, which is key to building lasting habits.
+</Note>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Set realistic goals">
+    Start with 5-10 cards per day. You can always increase later. Meeting a small goal feels better than missing a big one.
+  </Accordion>
+  <Accordion title="Study at the same time">
+    Pick a consistent time each day. Morning study sessions have the highest completion rates.
+  </Accordion>
+  <Accordion title="Use reminders wisely">
+    Set your reminder for a time when you can actually study. Evening reminders (e.g., 8 PM) often work well.
+  </Accordion>
+  <Accordion title="Adjust as needed">
+    Life changes! Increase your goal during light periods, decrease during busy times. Consistency matters more than the number.
+  </Accordion>
+  <Accordion title="Don't give up on bad days">
+    Miss your goal? Study anyway! Even 3 cards maintains your overall streak and keeps the habit alive.
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Spaced Repetition
+
+Daily goals work seamlessly with the SRS system:
+
+- Your goal counts **all cards studied** (both reviews and new cards)
+- The SRS algorithm ensures you review cards when you need to
+- New cards are added gradually to avoid overwhelming you
+
+<Tip>
+  A goal of 10 cards typically means 5-7 reviews + 3-5 new cards, depending on your SRS schedule.
+</Tip>
+
+## Progress Calculation
+
+The progress percentage is calculated simply:
+
+```typescript
+const getProgressPercentage = useCallback(() => {
+  return Math.min(100, Math.round((todayProgress.cardsStudied / goal.cardsPerDay) * 100));
+}, [todayProgress, goal]);
+```
+
+Key points:
+- Caps at 100% (studying extra cards doesn't show >100%)
+- Updates in real-time as you study
+- Rounded to nearest whole percentage
+
+## Data Persistence
+
+Goal data is stored locally using Capacitor Preferences:
+
+```typescript
+const GOALS_KEY = 'vocabVaultDailyGoals';
+
+const saveData = async (newGoal: DailyGoal, newProgress: DailyProgress, newHistory: DailyProgress[]) => {
+  const data: GoalsData = { goal: newGoal, todayProgress: newProgress, history: newHistory };
+  await Preferences.set({ key: GOALS_KEY, value: JSON.stringify(data) });
+};
+```
+
+Benefits:
+- Persists between sessions
+- Works offline
+- Privacy-focused (no server required)
+- Fast access
+
+## Motivation Psychology
+
+Daily goals leverage several psychological principles:
+
+### Clear Targets
+
+Concrete goals ("study 10 cards") are more motivating than vague ones ("study vocabulary").
+
+### Progress Visibility
+
+Seeing the progress bar fill up provides immediate positive reinforcement.
+
+### Completion Effect
+
+The desire to "complete" something (reach 100%) is a powerful motivator.
+
+### Small Wins
+
+Daily goals create frequent small wins, which build confidence and momentum.
+
+<Quote>
+  "A goal properly set is halfway reached."
+  
+  — Zig Ziglar
+</Quote>
+
+## Customization Options
+
+Update your goal settings at any time:
+
+```typescript
+const updateGoal = useCallback(async (newGoal: Partial<DailyGoal>) => {
+  const updated = { ...goal, ...newGoal };
+  setGoal(updated);
+  await saveData(updated, todayProgress, history);
+}, [goal, todayProgress, history]);
+```
+
+You can change:
+- Cards per day target
+- Reminder enabled/disabled
+- Reminder time (hour and minute)
+
+<Warning>
+  Changing your goal mid-day will update the progress percentage immediately based on the new target.
+</Warning>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Streaks" icon="fire" href="/learning/streaks">
+    Track consecutive days of studying
+  </Card>
+  <Card title="Achievements" icon="trophy" href="/learning/achievements">
+    Unlock achievements for consistency
+  </Card>
+  <Card title="Spaced Repetition" icon="brain" href="/learning/spaced-repetition">
+    Learn how cards are scheduled
+  </Card>
+</CardGroup>

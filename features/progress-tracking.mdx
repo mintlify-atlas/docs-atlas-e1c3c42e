@@ -1,0 +1,439 @@
+---
+title: Progress Tracking
+description: Track your learning progress with streaks, completion percentages, achievements, and spaced repetition memory system.
+---
+
+Vocab Vault tracks your learning journey with comprehensive progress analytics, including study streaks, category completion, achievements, and an advanced Spaced Repetition System (SRS) for optimal long-term retention.
+
+## Progress Data Types
+
+Vocab Vault tracks multiple dimensions of progress:
+
+### Term Status
+
+Each term can be in one of three states:
+
+```typescript
+type TermStatus = 'known' | 'learning' | 'unseen';
+```
+
+- **Unseen**: Never studied (default state)
+- **Learning**: Reviewed but not marked as known
+- **Known**: Marked as mastered (via swipe-right in flashcard mode)
+
+### Category Progress
+
+Progress is calculated per category:
+
+```tsx
+const getCategoryProgress = (categoryId: string) => {
+  const categoryTerms = getTermsByCategory(categoryId);
+  const knownCount = categoryTerms.filter(term => 
+    progress[term.id] === 'known'
+  ).length;
+  const total = categoryTerms.length;
+  const percentage = Math.round((knownCount / total) * 100);
+  
+  return { knownCount, total, percentage };
+};
+```
+
+Example output:
+```json
+{
+  "knownCount": 7,
+  "total": 10,
+  "percentage": 70
+}
+```
+
+### Total Progress
+
+Aggregate progress across all categories:
+
+```tsx
+const getTotalProgress = () => {
+  let totalKnown = 0;
+  let totalTerms = 0;
+
+  categories.forEach(category => {
+    const { knownCount, total } = getCategoryProgress(category.id);
+    totalKnown += knownCount;
+    totalTerms += total;
+  });
+
+  const percentage = Math.round((totalKnown / totalTerms) * 100);
+  return { totalKnown, totalTerms, percentage };
+};
+```
+
+## Study Streaks
+
+Streaks track consecutive days of studying:
+
+### How Streaks Work
+
+1. **First Study**: Streak starts at 1
+2. **Daily Study**: Streak increments by 1
+3. **Missed Day**: Streak resets to 1
+4. **Same Day**: Multiple study sessions on same day don't affect streak
+
+```tsx
+const updateStreak = async () => {
+  const today = getLocalDateKey(); // e.g., "2026-03-03"
+  const streakData = await loadStreakData();
+
+  if (streakData.lastStudyDate === today) {
+    return; // Already studied today
+  }
+
+  const diffDays = diffDateKeys(today, streakData.lastStudyDate);
+  
+  let newStreak = 1;
+  if (diffDays === 1) {
+    // Consecutive day
+    newStreak = streakData.streak + 1;
+  }
+
+  await saveStreakData({ streak: newStreak, lastStudyDate: today });
+};
+```
+
+### Streak Achievements
+
+Reaching certain streak milestones unlocks achievements:
+- 3 days: "Getting Started"
+- 7 days: "Week Warrior"
+- 30 days: "Month Master"
+- 100 days: "Centurion"
+
+<Tip>
+Study at the same time each day to build a consistent habit and maintain your streak!
+</Tip>
+
+## Spaced Repetition System (SRS)
+
+Vocab Vault includes an advanced SRS mode based on the SM-2 algorithm for optimal long-term retention.
+
+### What is SRS?
+
+Spaced Repetition schedules reviews at increasing intervals:
+- New card: Review today
+- Easy recall: Review in 3 days
+- Medium recall: Review in 1 day  
+- Hard recall: Review tomorrow
+- Forgot: Review today (restart)
+
+### SRS Card Data
+
+Each term has SRS metadata:
+
+```typescript
+interface SRSCard {
+  termId: number;
+  interval: number;        // Days until next review
+  repetition: number;      // Number of successful reviews
+  easeFactor: number;      // Difficulty multiplier (1.3-2.5)
+  dueDate: number;         // Timestamp when due
+  lastReviewDate: number;  // Last review timestamp
+}
+```
+
+### Quality Ratings
+
+When reviewing a card, rate your recall quality (0-5):
+
+- **5 - Perfect**: Instant recall, very easy
+- **4 - Correct**: Correct after slight hesitation
+- **3 - Correct with effort**: Recalled but took some thought
+- **2 - Difficult**: Almost forgot, barely recalled
+- **1 - Wrong but familiar**: Forgot, but recognized answer
+- **0 - Complete blank**: No idea, totally forgot
+
+```tsx
+const reviewCard = async (termId: number, quality: number) => {
+  const card = srsData.cards[termId] || initializeCard(termId);
+  const updatedCard = processReview(card, quality);
+  
+  // Save updated SRS data
+  await saveSrsData(updatedCard);
+};
+```
+
+### Study Queue
+
+SRS mode creates an optimized study queue:
+
+```tsx
+const getSrsStudyQueue = (categoryId?: string, newCardsLimit: number = 10) => {
+  // 1. Get all due cards (scheduled for today or earlier)
+  const dueCards = getDueCards(srsData.cards);
+  
+  // 2. Get new cards (never studied)
+  const newCards = getNewCards(termIds, srsData.cards, newCardsLimit);
+  
+  // 3. Combine: due cards first, then new cards
+  return [...dueCards, ...newCards];
+};
+```
+
+**Study queue prioritization:**
+1. **Due cards** (cards scheduled for review today)
+2. **New cards** (up to daily limit, default 10)
+3. No cards shown if nothing is due and new limit reached
+
+### Mastery Levels
+
+SRS cards progress through mastery levels:
+
+```tsx
+function getMasteryLevel(card: SRSCard): 'new' | 'learning' | 'young' | 'mature' | 'mastered' {
+  if (card.repetition === 0) return 'new';
+  if (card.repetition < 3) return 'learning';
+  if (card.interval < 21) return 'young';
+  if (card.interval < 100) return 'mature';
+  return 'mastered';
+}
+```
+
+- **New**: Never reviewed
+- **Learning**: 1-2 successful reviews
+- **Young**: 3+ reviews, interval < 21 days
+- **Mature**: Interval 21-100 days
+- **Mastered**: Interval 100+ days
+
+### Retention Stats
+
+Track your retention rate:
+
+```tsx
+const getSrsStats = (categoryId?: string) => {
+  return {
+    totalCards: 150,
+    newCards: 45,
+    learningCards: 30,
+    youngCards: 40,
+    matureCards: 25,
+    masteredCards: 10,
+    retentionRate: 92, // % of reviews with quality >= 3
+  };
+};
+```
+
+## Study Mode Toggle
+
+Switch between Classic and SRS modes:
+
+```tsx
+const { studyMode, toggleStudyMode } = useProgress();
+
+// studyMode: 'classic' | 'srs'
+```
+
+**Classic Mode:**
+- Simple "known" vs "unseen" tracking
+- No scheduling, review any time
+- Good for initial learning
+
+**SRS Mode:**
+- Scientific spacing for long-term retention
+- Reviews scheduled based on performance
+- Optimal for memorization
+
+<Warning>
+Once you start using SRS mode, switching back to Classic mode won't delete your SRS data, but your spaced repetition schedule won't advance.
+</Warning>
+
+## Achievements
+
+Unlock achievements by reaching milestones:
+
+```typescript
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  condition: (stats: UserStats) => boolean;
+}
+```
+
+### Achievement Examples
+
+- **First Steps**: View your first 10 cards
+- **Foundation Master**: Complete 100% of Foundation category
+- **Quiz Ace**: Score 100% on any quiz
+- **Streak Master**: Maintain a 7-day streak
+- **Completionist**: Master all categories
+
+### Achievement Notification
+
+When unlocked, achievements trigger a visual notification:
+
+```tsx
+const { newlyUnlocked, clearNewAchievement } = useProgress();
+
+if (newlyUnlocked) {
+  return (
+    <AchievementToast
+      achievement={newlyUnlocked}
+      onDismiss={clearNewAchievement}
+    />
+  );
+}
+```
+
+## Statistics Tracked
+
+The app tracks comprehensive stats:
+
+```typescript
+interface UserStats {
+  totalCardsViewed: number;           // Lifetime card views
+  unlockedAchievements: string[];     // Achievement IDs
+  categoryProgress: Record<string, number>; // Terms known per category
+  streak: number;                      // Current streak
+  logoClicks: number;                  // Easter egg counter
+  lastStudyTime: number;               // Last study timestamp
+}
+```
+
+### Incrementing Stats
+
+```tsx
+// Call when viewing a flashcard
+const { incrementTotalViews } = useProgress();
+await incrementTotalViews();
+
+// Call when clicking logo (easter egg)
+const { incrementLogoClicks } = useProgress();
+await incrementLogoClicks();
+```
+
+## Data Persistence
+
+All progress is saved to device storage:
+
+```tsx
+const STORAGE_KEY = 'vocabVaultProgress';
+const STREAK_KEY = 'vocabVaultStreak';
+const ELI5_KEY = 'vocabVaultEli5Mode';
+const ACHIEVEMENTS_KEY = 'vocabVaultAchievements';
+const STATS_KEY = 'vocabVaultStats';
+const SRS_KEY = 'vocabVaultSRS';
+
+// Save progress
+await Preferences.set({ 
+  key: STORAGE_KEY, 
+  value: JSON.stringify(progress) 
+});
+
+// Load progress
+const { value: stored } = await Preferences.get({ key: STORAGE_KEY });
+const progress = safeJsonParse(stored, {});
+```
+
+**Data persists across:**
+- App restarts
+- Browser refreshes  
+- Device restarts (mobile)
+- Updates and reinstalls (if storage is preserved)
+
+<Warning>
+Progress is stored locally on your device. Clearing browser data or uninstalling the app will delete your progress. Cloud sync is not currently supported.
+</Warning>
+
+## Reset Progress
+
+Clear all progress and start fresh:
+
+```tsx
+const { resetProgress } = useProgress();
+
+await resetProgress();
+// Clears:
+// - Term statuses
+// - Streaks
+// - Achievements
+// - Stats
+// - SRS data
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Study Daily">
+    Even 5 minutes a day is better than cramming. Daily study maintains your streak and optimizes SRS scheduling.
+  </Accordion>
+
+  <Accordion title="Use SRS for Long-Term Retention">
+    Switch to SRS mode once you've done an initial pass through a category. SRS is scientifically proven to improve retention.
+  </Accordion>
+
+  <Accordion title="Be Honest with Quality Ratings">
+    In SRS mode, rate your recall honestly. Rating cards as "easy" when they're not will cause you to forget them later.
+  </Accordion>
+
+  <Accordion title="Review Due Cards First">
+    Always review due cards before studying new cards. Due cards are your most efficient learning opportunity.
+  </Accordion>
+
+  <Accordion title="Don't Reset Too Often">
+    Progress tracking is most valuable over time. Only reset if you genuinely need to start over.
+  </Accordion>
+</AccordionGroup>
+
+## Progress Visualization Ideas
+
+While viewing progress data:
+
+- **Category completion bars**: Visual progress bars on home screen
+- **Streak calendar**: Heatmap showing study days
+- **Achievement gallery**: Grid of unlocked achievements
+- **Mastery distribution**: Pie chart of new/learning/mature cards
+- **Retention graph**: Line chart of retention rate over time
+
+## Technical Implementation
+
+Progress tracking is managed by the `useProgress` hook:
+
+```tsx
+const {
+  // Classic mode
+  progress,
+  markTerm,
+  getTermStatus,
+  getCategoryProgress,
+  getTotalProgress,
+  
+  // Streaks
+  streak,
+  updateStreak,
+  
+  // SRS mode
+  studyMode,
+  toggleStudyMode,
+  reviewCard,
+  getSrsCard,
+  getSrsStudyQueue,
+  getDueCardsCount,
+  getTermMastery,
+  getSrsStats,
+  
+  // Stats
+  totalCardsViewed,
+  incrementTotalViews,
+  
+  // Achievements
+  unlockedAchievements,
+  newlyUnlocked,
+  clearNewAchievement,
+  
+  // Settings
+  eli5Mode,
+  toggleEli5Mode,
+  resetProgress,
+} = useProgress();
+```
+
+This centralized hook ensures consistent progress tracking across all features.

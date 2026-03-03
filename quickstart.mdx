@@ -1,80 +1,184 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Start mastering coding vocabulary in under 2 minutes
 ---
 
-## Get started in three steps
+## Get started with Vocab Vault
 
-Get your documentation site running locally and make your first customization.
+Vocab Vault is designed to get you learning immediately. No sign-up, no configuration, just pure learning.
 
-### Step 1: Set up your local environment
+<Steps>
+  <Step title="Access the app">
+    Open Vocab Vault in your browser or install the Android app.
+    
+    <CardGroup cols={2}>
+      <Card title="Web app" icon="globe">
+        Visit the web app at your deployment URL
+      </Card>
+      <Card title="Android app" icon="android">
+        Install from the APK (see [Installation](/installation))
+      </Card>
+    </CardGroup>
+    
+    The app works offline-first, so all vocabulary is stored locally on your device.
+  </Step>
+
+  <Step title="Pick a category or study all">
+    You'll see the home screen with category cards organized by topic.
+    
+    **Choose your path:**
+    - **Study All** - Review random terms from all categories
+    - **Pick a specific category** - Focus on one topic like Foundation, APIs, or UI/UX
+    - **Search** - Use the search bar to find specific terms
+    
+    <Tip>
+      Start with the **Foundation** category if you're new to coding vocabulary. It covers essential concepts like MVP, Frontend, Backend, and Deploy.
+    </Tip>
+  </Step>
+
+  <Step title="Study your first flashcard">
+    Once you enter a category, you'll see your first flashcard.
+    
+    **How to use flashcards:**
+    
+    1. Read the term on the front of the card
+    2. Tap or click the card to flip and see the definition
+    3. Swipe right or click "Got it!" if you know it
+    4. Swipe left or click "Next" to see another term
+    5. Use the ELI5 toggle (top right) for simpler "Explain Like I'm 5" definitions
+    
+    <Note>
+      Your progress is saved automatically to local storage, so you can pick up exactly where you left off.
+    </Note>
+  </Step>
+
+  <Step title="Build your streak">
+    Study at least one term each day to build your daily streak.
+    
+    **Track your progress:**
+    - View your current streak in the header
+    - Check your daily goal widget to see progress
+    - Unlock streak achievements at 3, 7, and 30 days
+    
+    <Tip>
+      Set a daily goal in **Settings** to stay motivated. Even 5 minutes a day builds momentum.
+    </Tip>
+  </Step>
+</Steps>
+
+## Learning modes
+
+Vocab Vault offers two ways to study:
+
+<CardGroup cols={2}>
+  <Card title="Flashcard mode" icon="cards-blank" href="/features/flashcard-mode">
+    Swipe through terms at your own pace. Perfect for learning new vocabulary.
+  </Card>
+  
+  <Card title="Quiz mode" icon="circle-question" href="/features/quiz-mode">
+    Test yourself with multiple choice questions. Great for reinforcing what you've learned.
+  </Card>
+</CardGroup>
+
+## Understanding the interface
+
+### Header
+
+The top bar shows:
+- Your current streak (fire icon)
+- Daily progress
+- Settings access
+- Theme toggle
+
+### Category cards
+
+Each category displays:
+- Category name and subtitle
+- Progress bar showing mastered terms
+- Color-coded badge
+- Material icon for visual recognition
+
+### Study screen
+
+While studying, you'll see:
+- **ELI5 toggle** - Switch between standard and beginner-friendly definitions
+- **Progress counter** - Track how many terms you've viewed
+- **Navigation buttons** - "Got it!" and "Next" for marking progress
+- **Swipe gestures** - Left to flip, right to mark as known
+
+## Tips for effective learning
 
 <AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
+  <Accordion title="Start with Foundation">
+    The Foundation category covers core concepts that appear everywhere in coding. Master these first to build a strong vocabulary base.
   </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
+  
+  <Accordion title="Use ELI5 mode when stuck">
+    Don't feel bad about using "Explain Like I'm 5" mode. Sometimes a simpler explanation helps the concept click before you tackle the technical definition.
+  </Accordion>
+  
+  <Accordion title="Study consistently over intensity">
+    5 minutes daily beats 1 hour once a week. Consistency builds long-term retention and maintains your streak.
+  </Accordion>
+  
+  <Accordion title="Test yourself with quiz mode">
+    After studying flashcards, switch to quiz mode to reinforce learning. Active recall strengthens memory.
+  </Accordion>
+  
+  <Accordion title="Apply terms in real conversations">
+    Use your new vocabulary when talking to AI coding tools. Notice how more precise language leads to better results.
   </Accordion>
 </AccordionGroup>
 
-### Step 2: Deploy your changes
+## Spaced repetition
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+Vocab Vault uses a spaced repetition algorithm to show you terms at optimal intervals:
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+- **New terms** - Shown immediately
+- **Learning terms** - Repeated more frequently
+- **Mastered terms** - Shown less often to reinforce retention
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+<Note>
+  The app automatically adjusts based on your responses. Terms you mark as "Got it!" will appear less frequently over time.
+</Note>
 
-### Step 3: Go live
+## Unlock achievements
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+As you study, you'll unlock achievements for:
+
+- **Category mastery** - Complete all terms in a category
+- **Streak milestones** - 3, 7, and 30-day streaks
+- **Vocabulary milestones** - 100 and 500 terms mastered
+- **Hidden achievements** - Secret badges for unique accomplishments
+
+View your achievements by clicking the trophy icon in the header.
+
+<Card title="View all achievements" icon="trophy" href="/learning/achievements">
+  Explore the complete list of 30+ unlockable achievements
+</Card>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Explore categories" icon="folder-open" href="/vocabulary/categories-list">
+    Browse all 24 vocabulary categories
+  </Card>
+  
+  <Card title="Learn about features" icon="sparkles" href="/features/flashcard-mode">
+    Discover all the learning features
+  </Card>
+  
+  <Card title="Set daily goals" icon="target" href="/learning/daily-goals">
+    Configure your study goals and reminders
+  </Card>
+  
+  <Card title="Installation guide" icon="download" href="/installation">
+    Install as a web or Android app
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+---
+
+<Tip>
+  **Pro tip:** Use Vocab Vault before your AI coding sessions. Learning 5-10 new terms primes your brain to communicate more effectively with tools like ChatGPT, Cursor, or Lovable.
+</Tip>

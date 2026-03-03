@@ -1,0 +1,316 @@
+---
+title: Contributing Guidelines
+description: Learn how to contribute to Vocab Vault - from adding vocabulary terms to reporting bugs and suggesting features
+---
+
+## Welcome Contributors!
+
+Thanks for your interest in contributing to Vocab Vault! This guide will help you understand how you can contribute to making this learning tool even better.
+
+## Ways to Contribute
+
+There are several ways you can help improve Vocab Vault:
+
+- Add new vocabulary terms
+- Improve existing definitions
+- Report bugs
+- Suggest new features
+- Improve documentation
+- Fix code issues
+
+## Adding New Vocabulary Terms
+
+One of the most valuable contributions is adding new terms that help learners understand coding concepts.
+
+<Steps>
+  <Step title="Locate the vocabulary file">
+    Open `src/data/vocabulary.ts` in your editor.
+  </Step>
+
+  <Step title="Find the appropriate category">
+    Navigate to the correct category section for your term:
+    
+    - **Foundation** - Core concepts (MVP, Frontend, Deploy)
+    - **APIs** - Endpoints, authentication, API keys
+    - **Code & Files** - Repos, branches, packages
+    - **Cloud** - Infrastructure, hosting, serverless
+    - **Git** - Version control basics
+    - **DevOps** - CI/CD, environments, deployment
+    - **UI/UX** - Design principles, components
+    - **CSS** - Styling fundamentals
+    - **AI / Prompts** - LLMs, tokens, prompt engineering
+    - **No-Code** - Automation, workflows, tools
+    - **Money / Business** - SaaS, MRR, conversion, churn
+    - **Tools** - Platform-specific vocab (Lovable, Cursor, Firebase, etc.)
+  </Step>
+
+  <Step title="Add your term">
+    Add a new entry following this format:
+
+    ```typescript
+    { 
+      id: NEXT_NUMBER, 
+      term: "Your Term", 
+      definition: "Clear, concise definition.", 
+      eli5Definition: "Super simple explanation a 5-year-old would get",
+      category: "category_id",
+      example: `Optional ASCII visual example`
+    },
+    ```
+
+    **Example:**
+
+    ```typescript
+    {
+      id: 150,
+      term: "Webhook",
+      definition: "An automated message sent from one app to another when something happens.",
+      eli5Definition: "Like a doorbell that tells another app 'hey, something just happened!'",
+      category: "apis",
+      example: `User signs up → Your app → Webhook → Email service → Welcome email`
+    },
+    ```
+  </Step>
+
+  <Step title="Test your addition">
+    Run the app locally to verify:
+    
+    ```bash
+    npm run dev
+    ```
+    
+    - Navigate to the category
+    - Find your new term
+    - Flip the card to check both definitions
+    - Toggle ELI5 mode to verify both versions display correctly
+  </Step>
+</Steps>
+
+## Writing Guidelines
+
+### Definitions
+
+<Card title="Be Practical, Not Academic" icon="lightbulb">
+  Write definitions that help someone build with AI tools, not pass a computer science exam.
+  
+  **Good**: "A database stores information so your app can remember things."
+  
+  **Not ideal**: "A database is a structured collection of data organized for efficient retrieval and manipulation."
+</Card>
+
+<Card title="Assume No Prior Knowledge" icon="user">
+  Your audience is learning to code for the first time. Avoid jargon in definitions unless you're defining that jargon.
+  
+  **Good**: "An API lets two apps talk to each other."
+  
+  **Not ideal**: "An API exposes programmatic interfaces via RESTful endpoints."
+</Card>
+
+### ELI5 Definitions
+
+<Card title="Use Everyday Analogies" icon="comment-dots">
+  Think: restaurants, toys, playgrounds, mail, houses, games.
+  
+  **Examples:**
+  - "A database is like a giant filing cabinet for your app"
+  - "An API is like a waiter taking your order to the kitchen"
+  - "Git is like a save button with superpowers - you can go back to any version"
+</Card>
+
+<Card title="Keep It Simple" icon="smile">
+  If a 10-year-old wouldn't understand it, simplify further. No technical terms in ELI5 definitions.
+</Card>
+
+### ASCII Examples
+
+Use ASCII art to visualize concepts when helpful:
+
+```typescript
+example: `
+┌─────────┐      ┌─────────┐
+│ Browser │ ───> │ Server  │
+│ (You)   │ <─── │ (Data)  │
+└─────────┘      └─────────┘
+`
+```
+
+## Reporting Bugs
+
+Found something broken? Help us fix it!
+
+<Steps>
+  <Step title="Check existing issues">
+    Search the issue tracker to see if it's already reported.
+  </Step>
+
+  <Step title="Create a detailed bug report">
+    Open a new issue including:
+    
+    - **What you expected to happen**
+    - **What actually happened**
+    - **Steps to reproduce**
+    - **Screenshots** (if relevant)
+    - **Device/browser** information
+  </Step>
+</Steps>
+
+**Example bug report:**
+
+```markdown
+## Bug: Card flip animation stutters on Android
+
+**Expected:** Smooth flip animation when tapping card
+
+**Actual:** Animation stutters and lags
+
+**Steps to reproduce:**
+1. Open app on Android device
+2. Select any category
+3. Tap card to flip
+
+**Device:** Samsung Galaxy S21, Android 13
+
+**Screenshots:** [attached]
+```
+
+## Suggesting Features
+
+Have an idea to improve Vocab Vault?
+
+<Steps>
+  <Step title="Open an enhancement issue">
+    Create a new issue and tag it as "enhancement".
+  </Step>
+
+  <Step title="Describe the feature">
+    Include:
+    
+    - **What** the feature is
+    - **Why** it would help learners
+    - **How** you envision it working (optional)
+  </Step>
+</Steps>
+
+**Example feature request:**
+
+```markdown
+## Feature: Spaced Repetition Algorithm
+
+**What:** Automatically show cards more frequently if you mark them as "need practice"
+
+**Why:** Helps learners focus on terms they struggle with, making studying more efficient
+
+**How it could work:** 
+- Track which cards users swipe left (need practice)
+- Show those cards 2x as often in study sessions
+- Reduce frequency after 3 correct answers
+```
+
+## Code Contributions
+
+If you want to contribute code changes:
+
+<Steps>
+  <Step title="Fork and clone">
+    1. Fork the repository on GitHub
+    2. Clone your fork locally
+    3. Create a new branch for your changes
+  </Step>
+
+  <Step title="Make your changes">
+    - Follow the existing code style
+    - Write clear, descriptive commit messages
+    - Add tests if adding new functionality
+    - Update documentation if needed
+  </Step>
+
+  <Step title="Test thoroughly">
+    ```bash
+    # Run tests
+    npm test
+    
+    # Run linter
+    npm run lint
+    
+    # Test locally
+    npm run dev
+    ```
+  </Step>
+
+  <Step title="Submit a pull request">
+    1. Push your branch to GitHub
+    2. Open a pull request with a clear description
+    3. Reference any related issues
+    4. Wait for review and address feedback
+  </Step>
+</Steps>
+
+## Contribution Standards
+
+### Code Quality
+
+- Follow TypeScript best practices
+- Use the project's ESLint configuration
+- Maintain existing code style and patterns
+- Write self-documenting code with clear variable names
+
+### Commit Messages
+
+Use clear, descriptive commit messages:
+
+**Good:**
+```
+Add webhook term to APIs category
+Fix card flip animation on mobile
+Update README with installation instructions
+```
+
+**Not ideal:**
+```
+Update
+Fix bug
+Changes
+```
+
+### Pull Requests
+
+- Keep PRs focused on a single feature or fix
+- Provide context in the PR description
+- Link to related issues
+- Be responsive to review feedback
+
+## Getting Help
+
+Need help contributing?
+
+- Open an issue with your question
+- Join the discussion in existing issues
+- Check the [Building Locally](/development/building) guide for setup help
+
+## Code of Conduct
+
+<Card title="Be Respectful" icon="handshake">
+  - Treat all contributors with respect
+  - Welcome newcomers and help them get started
+  - Provide constructive feedback
+  - Focus on what's best for the learning community
+</Card>
+
+<Card title="Be Collaborative" icon="users">
+  - Share knowledge and ideas
+  - Give credit where it's due
+  - Help others learn and grow
+  - Celebrate contributions of all sizes
+</Card>
+
+## Recognition
+
+All contributions are valued and appreciated! Contributors will be:
+
+- Listed in the project's contributors
+- Credited in release notes for significant contributions
+- Part of a community helping people learn to code
+
+---
+
+**Ready to contribute? Pick an issue, add a term, or suggest an improvement. Every contribution helps learners build with confidence!** 🚀

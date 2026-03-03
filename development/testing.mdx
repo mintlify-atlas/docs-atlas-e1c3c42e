@@ -1,0 +1,239 @@
+---
+title: Testing
+description: Learn how to run tests and write new test cases for Vocab Vault using Vitest
+---
+
+## Testing Setup
+
+Vocab Vault uses **Vitest** as its testing framework, which provides a fast, Vite-native testing experience with an API compatible with Jest.
+
+### Testing Stack
+
+- **Vitest** - Test runner and framework
+- **@testing-library/react** - React component testing utilities
+- **@testing-library/jest-dom** - Custom Jest matchers for DOM assertions
+- **jsdom** - DOM implementation for Node.js environment
+
+### Configuration
+
+The test configuration is defined in `vitest.config.ts`:
+
+```typescript
+test: {
+  environment: "jsdom",
+  globals: true,
+  setupFiles: ["./src/test/setup.ts"],
+  include: ["src/**/*.{test,spec}.{ts,tsx}"]
+}
+```
+
+**Key settings:**
+- **environment**: Uses `jsdom` to simulate browser DOM
+- **globals**: Enables global test APIs (describe, it, expect)
+- **setupFiles**: Runs setup file before tests
+- **include**: Test files pattern matching
+
+## Running Tests
+
+### Run All Tests
+
+Execute all tests once and exit:
+
+<CodeGroup>
+  ```bash npm
+  npm test
+  ```
+
+  ```bash yarn
+  yarn test
+  ```
+
+  ```bash pnpm
+  pnpm test
+  ```
+</CodeGroup>
+
+This runs `vitest run`, which executes all tests in a single pass - ideal for CI/CD pipelines.
+
+### Watch Mode
+
+Run tests in watch mode with automatic re-runs on file changes:
+
+<CodeGroup>
+  ```bash npm
+  npm run test:watch
+  ```
+
+  ```bash yarn
+  yarn test:watch
+  ```
+
+  ```bash pnpm
+  pnpm test:watch
+  ```
+</CodeGroup>
+
+Watch mode is perfect for development - tests automatically re-run when you modify source or test files.
+
+### Additional Test Commands
+
+Vitest supports additional flags for specific testing scenarios:
+
+```bash
+# Run tests with coverage
+vitest run --coverage
+
+# Run tests in a specific file
+vitest run src/components/Button.test.tsx
+
+# Run tests matching a pattern
+vitest run -t "should render correctly"
+
+# Run tests in UI mode
+vitest --ui
+```
+
+## Writing Tests
+
+### Test File Location
+
+Place test files alongside the code they test:
+
+```
+src/
+  components/
+    Button.tsx
+    Button.test.tsx  ← Test file
+  utils/
+    helpers.ts
+    helpers.spec.ts  ← Alternative naming
+```
+
+### Example Component Test
+
+Here's a basic example of testing a React component:
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button', () => {
+  it('should render with correct text', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  it('should call onClick when clicked', () => {
+    const handleClick = vi.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+    
+    screen.getByText('Click me').click();
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+});
+```
+
+### Testing with Path Aliases
+
+The test configuration supports the `@/` path alias:
+
+```tsx
+import { Button } from '@/components/ui/button';
+import { vocabularyData } from '@/data/vocabulary';
+```
+
+### Setup File
+
+The `src/test/setup.ts` file runs before all tests. Use it for:
+
+- Importing testing library extensions
+- Configuring global test utilities
+- Setting up mocks
+- Defining global test helpers
+
+Example setup file:
+
+```typescript
+import '@testing-library/jest-dom';
+
+// Add custom matchers or global mocks here
+```
+
+## Best Practices
+
+<Card title="Test Organization" icon="folder-tree">
+  - Group related tests using `describe` blocks
+  - Use descriptive test names that explain the expected behavior
+  - Follow the Arrange-Act-Assert pattern
+</Card>
+
+<Card title="Component Testing" icon="react">
+  - Test user-facing behavior, not implementation details
+  - Use Testing Library queries in order of priority: getByRole, getByLabelText, getByText
+  - Avoid testing CSS or styling directly
+</Card>
+
+<Card title="Test Coverage" icon="chart-line">
+  - Focus on critical user paths and business logic
+  - Don't aim for 100% coverage - prioritize valuable tests
+  - Test edge cases and error conditions
+</Card>
+
+## Troubleshooting
+
+### Tests Fail with Module Resolution Errors
+
+Ensure the `@/` alias is configured in `vitest.config.ts`:
+
+```typescript
+resolve: {
+  alias: { "@": path.resolve(__dirname, "./src") }
+}
+```
+
+### Tests Don't Re-run in Watch Mode
+
+1. Check that you're running `npm run test:watch` (not `npm test`)
+2. Verify file changes are being saved
+3. Try restarting the watch process
+
+### jsdom Errors
+
+If you see jsdom-related errors:
+
+1. Ensure `jsdom` is installed: `npm install -D jsdom`
+2. Check that `environment: "jsdom"` is set in vitest.config.ts
+3. Some browser APIs may need mocking (e.g., `window.matchMedia`, `IntersectionObserver`)
+
+### Testing Asynchronous Code
+
+Use async/await and Testing Library's async utilities:
+
+```tsx
+import { render, screen, waitFor } from '@testing-library/react';
+
+it('should load data asynchronously', async () => {
+  render(<AsyncComponent />);
+  
+  await waitFor(() => {
+    expect(screen.getByText('Loaded!')).toBeInTheDocument();
+  });
+});
+```
+
+### Mocking Capacitor Plugins
+
+When testing components that use Capacitor plugins:
+
+```typescript
+vi.mock('@capacitor/preferences', () => ({
+  Preferences: {
+    get: vi.fn(),
+    set: vi.fn(),
+  }
+}));
+```
+
+<Tip>
+  Run tests before committing code to catch issues early. Consider setting up a pre-commit hook to run tests automatically.
+</Tip>

@@ -1,0 +1,286 @@
+---
+title: Categories
+description: Explore 24 vocabulary categories covering everything from Foundation concepts to AI, CSS, and Security.
+---
+
+Vocab Vault organizes vocabulary into 24 themed categories, each with a unique color scheme and icon. Categories help you focus your learning on specific topics.
+
+## All 24 Categories
+
+<CardGroup cols={3}>
+  <Card title="Foundation" icon="architecture" color="#fbbf24">
+    Core Concepts - PRD, MVP, Frontend, Backend, Deploy
+  </Card>
+  <Card title="APIs" icon="plug" color="#6b7280">
+    Endpoints - API, Authentication, OAuth, Tokens
+  </Card>
+  <Card title="Code" icon="code" color="#ec4899">
+    Files - Repository, Commits, Branches, Dependencies
+  </Card>
+  <Card title="Development" icon="laptop" color="#3b82f6">
+    Environment - IDE, Terminal, Debug, Console
+  </Card>
+  <Card title="Git" icon="code-branch" color="#84cc16">
+    Version Control - Clone, Push, Pull, Merge
+  </Card>
+  <Card title="Cloud" icon="cloud" color="#14b8a6">
+    Services - Firestore, Collections, Hosting
+  </Card>
+  <Card title="UI/UX" icon="palette" color="#a855f7">
+    Design - Hero, Navbar, Cards, Modals
+  </Card>
+  <Card title="CSS" icon="paintbrush" color="#f59e0b">
+    Styling - Selectors, Flexbox, Grid, Media Queries
+  </Card>
+  <Card title="AI" icon="brain" color="#22c55e">
+    Prompts - LLMs, Temperature, RAG, Embeddings
+  </Card>
+  <Card title="No-Code" icon="wand-magic-sparkles" color="#06b6d4">
+    Tools - Webhooks, Automations, Workflows
+  </Card>
+  <Card title="Money" icon="dollar-sign" color="#f43f5e">
+    Business - Revenue, Conversion, SaaS concepts
+  </Card>
+  <Card title="Tools" icon="wrench" color="#6366f1">
+    Platforms - VSCode, GitHub, Figma
+  </Card>
+  <Card title="Shortcuts" icon="keyboard" color="#fb7185">
+    Keys & CLI - Terminal commands, keyboard shortcuts
+  </Card>
+  <Card title="Security" icon="lock" color="#ef4444">
+    Protection - Encryption, HTTPS, Tokens
+  </Card>
+  <Card title="Debugging" icon="bug" color="#f97316">
+    Fix Bugs - Stack traces, console logs, breakpoints
+  </Card>
+  <Card title="Analytics" icon="chart-line" color="#a3e635">
+    Growth - Metrics, KPIs, A/B testing
+  </Card>
+  <Card title="Mobile" icon="mobile" color="#0ea5e9">
+    App Dev - Native, hybrid, responsive design
+  </Card>
+  <Card title="Data" icon="database" color="#8b5cf6">
+    Storage - Databases, queries, schemas
+  </Card>
+  <Card title="SEO" icon="search" color="#d946ef">
+    Visibility - Meta tags, keywords, crawling
+  </Card>
+  <Card title="Testing" icon="check" color="#10b981">
+    QA - Unit tests, integration tests, E2E
+  </Card>
+  <Card title="Architecture" icon="building" color="#64748b">
+    Systems - Microservices, monoliths, patterns
+  </Card>
+  <Card title="Hosting" icon="server" color="#0891b2">
+    Deploy - Vercel, Netlify, cloud platforms
+  </Card>
+  <Card title="AI Tools" icon="robot" color="#f472b6">
+    Assistants - ChatGPT, Claude, Gemini, Cursor
+  </Card>
+  <Card title="Package" icon="box" color="#f59e0b">
+    Build - npm, dependencies, bundlers
+  </Card>
+</CardGroup>
+
+## Category Card Design
+
+Each category card displays:
+
+### Visual Elements
+- **Number**: Zero-padded category number (01-24)
+- **Name**: Category name (e.g., "Foundation", "APIs")
+- **Subtitle**: Short descriptor (e.g., "Core Concepts", "Endpoints")
+- **Icon**: Material icon representing the category
+- **Abbreviation**: Large background text (e.g., "FDN", "API")
+- **Color**: Unique background color from Tailwind custom palette
+
+### Progress Indicators
+- **Progress Bar**: Visual bar showing percentage of terms marked as "known"
+- **Percentage**: Numeric percentage (or "Start →" if 0%)
+- **Due Count Badge**: Shows number of cards due for review (SRS mode)
+
+```tsx
+<CategoryCard
+  index={0}
+  name="Foundation"
+  subtitle="Core Concepts"
+  icon="architecture"
+  abbrev="FDN"
+  colorClass="bg-category-yellow"
+  progress={45}
+  dueCount={3}
+  onClick={() => navigateToCategory('foundation')}
+/>
+```
+
+## Category Color Palette
+
+Each category has a custom Tailwind color class:
+
+```css
+/* Example colors from the palette */
+bg-category-yellow   /* Foundation - Warm yellow */
+bg-category-gray     /* APIs - Neutral gray */
+bg-category-pink     /* Code - Bright pink */
+bg-category-blue     /* Development - Sky blue */
+bg-category-olive    /* Git - Olive green */
+bg-category-teal     /* Cloud - Teal */
+bg-category-purple   /* UI/UX - Purple */
+```
+
+Colors are carefully chosen to:
+- Be visually distinct from each other
+- Maintain good contrast with text
+- Create memorable associations with topics
+
+## Category Progress Tracking
+
+Progress is calculated per category:
+
+```tsx
+const getCategoryProgress = (categoryId: string) => {
+  const categoryTerms = getTermsByCategory(categoryId);
+  const knownCount = categoryTerms.filter(term => 
+    progress[term.id] === 'known'
+  ).length;
+  const total = categoryTerms.length;
+  const percentage = Math.round((knownCount / total) * 100);
+  
+  return { knownCount, total, percentage };
+};
+```
+
+Example output:
+```json
+{
+  "knownCount": 7,
+  "total": 10,
+  "percentage": 70
+}
+```
+
+## Spaced Repetition (SRS) Integration
+
+When using SRS mode, category cards show additional information:
+
+### Due Count Badge
+- Displays number of cards due for review today
+- Animated pulse effect to draw attention
+- Only shows if count > 0
+
+```tsx
+{dueCount > 0 && (
+  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-white rounded-full animate-pulse">
+    {dueCount} due
+  </span>
+)}
+```
+
+### Study Queue
+Clicking a category with due cards prioritizes:
+1. **Due cards first** (cards scheduled for review today)
+2. **New cards second** (up to daily limit, default 10)
+
+See [Progress Tracking](/features/progress-tracking) for more on SRS mode.
+
+## Category Data Structure
+
+```typescript
+export const categories = [
+  {
+    id: "foundation",
+    name: "Foundation",
+    subtitle: "Core Concepts",
+    icon: "architecture",
+    abbrev: "FDN",
+    colorClass: "bg-category-yellow"
+  },
+  {
+    id: "api",
+    name: "APIs",
+    subtitle: "Endpoints",
+    icon: "integration_instructions",
+    abbrev: "API",
+    colorClass: "bg-category-gray"
+  },
+  // ... 22 more categories
+] as const;
+```
+
+## View Modes
+
+Categories can be displayed in two layouts:
+
+### Grid View
+- Compact card grid
+- Shows 2-3 cards per row (responsive)
+- Fixed height cards (32-36px)
+- Rounded corners (`rounded-2xl`)
+
+### List View
+- Full-width cards stacked vertically
+- Variable height based on content
+- Border bottom instead of rounded corners
+- Default view
+
+```tsx
+className={isGridView
+  ? 'rounded-2xl border-2 h-32 sm:h-36'
+  : 'min-h-32 border-b-2'
+}
+```
+
+## Navigation & Interactions
+
+### Click/Tap
+Clicking a category card navigates to that category's study view with all terms loaded.
+
+### Hover Effects
+- Slight scale up (`scale: 1.03`)
+- Lift effect (`y: -2`)
+- Icon scales slightly (`scale-110`)
+- Shadow increases for depth
+
+### Focus States
+Accessible focus ring for keyboard navigation:
+```css
+focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+```
+
+### Accessibility
+- `role="button"` for semantic meaning
+- `tabIndex={0}` for keyboard navigation
+- `aria-label` with full context: "Study Foundation - Core Concepts. Progress: 45%"
+- `onKeyDown` handler for Enter/Space activation
+
+## Animation
+
+Category cards use Framer Motion for polish:
+
+```tsx
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: index * 0.03, duration: 0.2 }}
+  whileHover={{ scale: 1.03, y: -2 }}
+  whileTap={{ scale: 0.98 }}
+/>
+```
+
+- **Staggered entrance**: Each card animates in with a small delay
+- **Hover lift**: Cards rise slightly on hover
+- **Tap feedback**: Subtle scale down on click
+
+## Tips
+
+<Tip>
+Start with **Foundation** and **Development** categories. These cover essential concepts that appear across all other categories.
+</Tip>
+
+<Tip>
+Focus on one category at a time until you reach 80%+ progress before moving to the next. This ensures solid retention.
+</Tip>
+
+<Tip>
+Use the due count badges in SRS mode to prioritize your daily study. Cards due for review are your most efficient learning opportunity.
+</Tip>

@@ -1,0 +1,210 @@
+---
+title: Spaced Repetition System
+description: Learn how Vocab Vault uses the SM-2 algorithm to optimize your learning and maximize long-term retention
+---
+
+Vocab Vault implements the **SuperMemo 2 (SM-2)** spaced repetition algorithm to help you learn vocabulary more efficiently and retain it for the long term.
+
+## What is Spaced Repetition?
+
+Spaced repetition is a learning technique that schedules reviews at increasing intervals. Instead of cramming information all at once, you review material just before you're about to forget it. This technique is backed by decades of cognitive science research and is proven to:
+
+- Improve long-term retention by up to 200%
+- Reduce study time by focusing on difficult material
+- Build stronger neural pathways through optimally-timed reviews
+- Combat the forgetting curve discovered by Hermann Ebbinghaus
+
+<Info>
+  **The Science**: Each time you successfully recall a term, the memory becomes stronger and the interval before the next review increases. This exploits the psychological spacing effect to encode information into long-term memory.
+</Info>
+
+## The SM-2 Algorithm
+
+Vocab Vault uses the SM-2 algorithm developed by Piotr Wozniak in 1987. This algorithm calculates optimal review intervals based on your performance.
+
+### How It Works
+
+Each flashcard has three key metrics:
+
+- **Ease Factor**: How easy this card is for you (starts at 2.5)
+- **Interval**: Number of days until the next review
+- **Repetitions**: Successful reviews in a row
+
+### Quality Ratings
+
+When reviewing a card, you rate your recall using simplified buttons:
+
+<CardGroup cols={2}>
+  <Card title="Again" icon="rotate-left" color="#ef4444">
+    You didn't remember it. The card resets to review tomorrow.
+  </Card>
+  <Card title="Hard" icon="face-frown" color="#f97316">
+    You remembered it with serious difficulty.
+  </Card>
+  <Card title="Good" icon="check" color="#22c55e">
+    You remembered it with some hesitation.
+  </Card>
+  <Card title="Easy" icon="bolt" color="#10b981">
+    Perfect recall! You knew it instantly.
+  </Card>
+</CardGroup>
+
+These buttons map to the SM-2 quality scale:
+
+```typescript
+const SIMPLE_RATINGS = [
+  { value: 1, label: "Again", sm2Quality: 1 },
+  { value: 2, label: "Hard", sm2Quality: 3 },
+  { value: 3, label: "Good", sm2Quality: 4 },
+  { value: 4, label: "Easy", sm2Quality: 5 },
+];
+```
+
+### Interval Scheduling
+
+The algorithm calculates your next review date based on your performance:
+
+<Steps>
+  <Step title="First Review">
+    If you answer correctly, the card comes back in **1 day**.
+  </Step>
+  <Step title="Second Review">
+    If you answer correctly again, it comes back in **6 days**.
+  </Step>
+  <Step title="Subsequent Reviews">
+    The interval multiplies by your ease factor. For example, with ease factor 2.5:
+    - Third review: 15 days (6 × 2.5)
+    - Fourth review: 37 days (15 × 2.5)
+    - Fifth review: 92 days (37 × 2.5)
+  </Step>
+</Steps>
+
+<Warning>
+  If you answer incorrectly (quality < 3), the card **resets** to 1-day interval and you start over.
+</Warning>
+
+### Ease Factor Adjustment
+
+Your ease factor adjusts based on how well you recall the card:
+
+```typescript
+// The ease factor formula
+newEaseFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+newEaseFactor = Math.max(1.3, newEaseFactor);
+```
+
+- **Easy answers** (quality 5) increase the ease factor → longer future intervals
+- **Hard answers** (quality 3) slightly decrease it → shorter intervals
+- **Wrong answers** (quality < 3) significantly decrease it → more frequent reviews
+- The minimum ease factor is **1.3** to prevent cards from getting stuck
+
+## Mastery Levels
+
+As you review cards, they progress through mastery levels:
+
+<Steps>
+  <Step title="New" icon="stars">
+    Never reviewed before. These appear in your study queue alongside due cards.
+  </Step>
+  <Step title="Learning" icon="graduation-cap">
+    Interval less than 7 days. You're actively building this memory.
+  </Step>
+  <Step title="Reviewing" icon="refresh">
+    Interval between 7-21 days. The memory is getting stronger.
+  </Step>
+  <Step title="Mastered" icon="trophy">
+    Interval 21+ days. This term is in your long-term memory!
+  </Step>
+</Steps>
+
+## Study Queue Algorithm
+
+Vocab Vault intelligently combines due cards and new cards in your study queue:
+
+```typescript
+// Interleave: 3 due cards, then 1 new card
+while (dueIdx < dueCards.length || newIdx < newCards.length) {
+  // Add up to 3 due cards
+  for (let i = 0; i < 3 && dueIdx < dueCards.length; i++) {
+    queue.push(dueCards[dueIdx++]);
+  }
+  // Add 1 new card
+  if (newIdx < newCards.length) {
+    queue.push(newCards[newIdx++]);
+  }
+}
+```
+
+This ensures you:
+- Review due cards before they're forgotten
+- Steadily introduce new material (10 new cards per day by default)
+- Don't get overwhelmed with only new content
+
+<Tip>
+  Due cards are sorted by overdue date first, then by ease factor (harder cards come first).
+</Tip>
+
+## Retention Statistics
+
+Track your learning progress with detailed statistics:
+
+- **Learned**: Total cards you've reviewed at least once
+- **Learning**: Cards with intervals < 21 days
+- **Mature**: Cards with intervals ≥ 21 days (long-term memory!)
+- **Due Today**: Cards scheduled for review today
+- **Average Ease**: Your overall ease factor across all cards
+
+## Implementation Details
+
+The SRS system is implemented in `/src/lib/sm2.ts`:
+
+```typescript
+export interface SRSCard {
+  termId: number;
+  easeFactor: number;      // How easy this card is (starts at 2.5)
+  interval: number;        // Days until next review
+  repetitions: number;     // Number of successful reviews in a row
+  nextReviewDate: string;  // ISO date string
+  lastReviewDate: string | null;
+  quality: number;         // Last quality rating
+}
+```
+
+Key functions include:
+
+- `initializeCard(termId)`: Creates a new SRS card with default values
+- `processReview(card, quality)`: Updates card based on your rating (0-5)
+- `isDue(card)`: Checks if a card needs review today
+- `getDueCards(cards)`: Gets all cards due for review
+- `getStudyQueue(allTermIds, cards, newCardsPerDay)`: Builds your study session
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Be honest with your ratings">
+    Don't mark a card as "Easy" if you hesitated. Accurate ratings ensure optimal scheduling.
+  </Accordion>
+  <Accordion title="Review daily">
+    Consistency is key. Even 5-10 minutes daily is more effective than hour-long sessions once a week.
+  </Accordion>
+  <Accordion title="Don't skip difficult cards">
+    Cards you struggle with need more reviews. Embrace the "Again" button—it's helping you learn!
+  </Accordion>
+  <Accordion title="Limit new cards">
+    Start with 10 new cards per day. Increase gradually as you get comfortable with your review load.
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Daily Goals" icon="flag" href="/learning/daily-goals">
+    Set daily study targets to stay consistent
+  </Card>
+  <Card title="Streaks" icon="fire" href="/learning/streaks">
+    Build momentum with daily practice streaks
+  </Card>
+  <Card title="Achievements" icon="trophy" href="/learning/achievements">
+    Unlock achievements as you master categories
+  </Card>
+</CardGroup>

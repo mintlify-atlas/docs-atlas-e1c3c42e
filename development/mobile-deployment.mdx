@@ -1,0 +1,311 @@
+---
+title: Mobile Deployment
+description: Build and deploy Vocab Vault as a native Android app using Capacitor
+---
+
+## Overview
+
+Vocab Vault uses **Capacitor** to package the web app as a native Android application. Capacitor provides a web-native runtime that allows your React app to run as a native mobile app with access to native device APIs.
+
+## Prerequisites
+
+Before building for Android, ensure you have:
+
+- **Node.js** and **npm** installed
+- **Android Studio** installed and configured
+- **Java Development Kit (JDK)** 17 or higher
+- **Android SDK** (installed via Android Studio)
+- **Gradle** (comes with Android Studio)
+
+## Capacitor Configuration
+
+The app's Capacitor configuration is defined in `capacitor.config.ts`:
+
+```typescript
+const config: CapacitorConfig = {
+  appId: 'com.dbcreations.vocabvault',
+  appName: 'Vocab Vault',
+  webDir: 'dist'
+};
+```
+
+**Configuration details:**
+- **appId**: Unique identifier for the Android package (`com.dbcreations.vocabvault`)
+- **appName**: Display name shown to users (Vocab Vault)
+- **webDir**: Directory containing the built web app (`dist`)
+
+## Setup Android Platform
+
+<Steps>
+  <Step title="Install Capacitor CLI">
+    The Capacitor CLI is already included in the project dependencies. Verify installation:
+
+    ```bash
+    npx cap --version
+    ```
+  </Step>
+
+  <Step title="Build the web app">
+    Create a production build of the React app:
+
+    <CodeGroup>
+      ```bash npm
+      npm run build
+      ```
+
+      ```bash yarn
+      yarn build
+      ```
+
+      ```bash pnpm
+      pnpm build
+      ```
+    </CodeGroup>
+
+    This generates optimized files in the `dist/` directory.
+  </Step>
+
+  <Step title="Add Android platform">
+    If you haven't already added the Android platform:
+
+    ```bash
+    npx cap add android
+    ```
+
+    This creates an `android/` directory with the native Android project.
+  </Step>
+
+  <Step title="Sync web assets">
+    Copy the web app to the native platform:
+
+    ```bash
+    npx cap sync android
+    ```
+
+    Run this command whenever you rebuild the web app.
+  </Step>
+</Steps>
+
+## Building the Android App
+
+### Open in Android Studio
+
+Open the Android project in Android Studio:
+
+```bash
+npx cap open android
+```
+
+This launches Android Studio with your Capacitor Android project.
+
+### Build from Android Studio
+
+<Steps>
+  <Step title="Select build variant">
+    In Android Studio, select **Build > Select Build Variant** and choose:
+    - **debug** for development builds
+    - **release** for production builds
+  </Step>
+
+  <Step title="Generate APK or Bundle">
+    - **For testing**: Build > Build Bundle(s) / APK(s) > Build APK(s)
+    - **For Google Play**: Build > Build Bundle(s) / APK(s) > Build Bundle(s)
+  </Step>
+
+  <Step title="Sign the release build">
+    For production releases, you'll need to sign the app:
+    
+    1. Generate a keystore (one-time setup)
+    2. Configure signing in `android/app/build.gradle`
+    3. Build signed APK/Bundle
+  </Step>
+</Steps>
+
+### Build from Command Line
+
+Alternatively, build from the command line:
+
+```bash
+# Navigate to android directory
+cd android
+
+# Build debug APK
+./gradlew assembleDebug
+
+# Build release APK (requires signing configuration)
+./gradlew assembleRelease
+
+# Build release bundle for Google Play
+./gradlew bundleRelease
+```
+
+Built files are located in:
+- APK: `android/app/build/outputs/apk/`
+- Bundle: `android/app/build/outputs/bundle/`
+
+## Testing on Device
+
+### Using Android Studio
+
+1. Connect an Android device via USB or start an emulator
+2. Click the **Run** button (green play icon) in Android Studio
+3. Select your target device
+4. The app will be installed and launched
+
+### Using Command Line
+
+```bash
+# Install debug build
+adb install android/app/build/outputs/apk/debug/app-debug.apk
+
+# Run the app
+adb shell am start -n com.dbcreations.vocabvault/.MainActivity
+```
+
+## Updating Web Assets
+
+Whenever you make changes to the web app:
+
+<Steps>
+  <Step title="Rebuild the web app">
+    ```bash
+    npm run build
+    ```
+  </Step>
+
+  <Step title="Sync to native platforms">
+    ```bash
+    npx cap sync
+    ```
+  </Step>
+
+  <Step title="Rebuild in Android Studio or run from CLI">
+    No need to rebuild if using live updates, otherwise rebuild the Android app.
+  </Step>
+</Steps>
+
+## Native Plugins Used
+
+Vocab Vault uses the following Capacitor plugins:
+
+### Preferences Plugin
+
+```typescript
+import { Preferences } from '@capacitor/preferences';
+
+// Store data
+await Preferences.set({ key: 'userProgress', value: JSON.stringify(data) });
+
+// Retrieve data
+const { value } = await Preferences.get({ key: 'userProgress' });
+```
+
+Used for persisting user progress, preferences, and settings locally.
+
+### Share Plugin
+
+```typescript
+import { Share } from '@capacitor/share';
+
+await Share.share({
+  title: 'Check out Vocab Vault',
+  text: 'Learn coding vocabulary with flashcards!',
+  url: 'https://vocabvault.app',
+});
+```
+
+Enables native sharing functionality.
+
+## Deployment to Google Play
+
+<Steps>
+  <Step title="Create a release build">
+    Build a signed Android App Bundle (AAB):
+
+    ```bash
+    cd android
+    ./gradlew bundleRelease
+    ```
+  </Step>
+
+  <Step title="Prepare store listing">
+    Create:
+    - App icon (512x512 PNG)
+    - Feature graphic (1024x500 PNG)
+    - Screenshots (at least 2)
+    - App description and metadata
+  </Step>
+
+  <Step title="Upload to Google Play Console">
+    1. Create an app in Google Play Console
+    2. Upload the AAB file
+    3. Complete store listing
+    4. Submit for review
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Capacitor Sync Fails
+
+- Ensure the web app is built: `npm run build`
+- Check that `dist/` directory exists and contains built files
+- Verify `webDir: 'dist'` in `capacitor.config.ts`
+
+### Android Studio Build Errors
+
+**Gradle sync failed:**
+```bash
+# Clear Gradle cache
+cd android
+./gradlew clean
+```
+
+**Java version mismatch:**
+- Ensure JDK 17+ is installed
+- Set `JAVA_HOME` environment variable
+- Configure JDK in Android Studio preferences
+
+### Plugin Not Found
+
+If a Capacitor plugin isn't recognized:
+
+```bash
+# Reinstall plugins
+npm install
+npx cap sync
+```
+
+### Live Reload for Development
+
+For faster development cycles, use live reload:
+
+```bash
+# Start dev server
+npm run dev
+
+# In capacitor.config.ts, add:
+server: {
+  url: 'http://192.168.1.x:8080',  // Your dev machine's IP
+  cleartext: true
+}
+
+# Sync and run
+npx cap sync
+npx cap open android
+```
+
+<Warning>
+  Remember to remove the `server` configuration before building production releases!
+</Warning>
+
+### App Crashes on Launch
+
+1. Check Android Studio Logcat for error messages
+2. Verify all plugins are installed: `npx cap sync`
+3. Ensure minimum SDK version requirements are met
+4. Test in a clean build: `./gradlew clean`
+
+<Tip>
+  Use `npx cap doctor` to diagnose common Capacitor configuration issues.
+</Tip>

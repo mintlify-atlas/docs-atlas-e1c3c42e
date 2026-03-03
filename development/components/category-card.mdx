@@ -1,0 +1,289 @@
+---
+title: CategoryCard Component
+description: Animated category card component for displaying vocabulary categories with progress tracking
+---
+
+The `CategoryCard` component displays a vocabulary category with its metadata, progress, and interactive animations. Used on the home screen to navigate to different study categories.
+
+## Features
+
+- **Animated Entry**: Staggered fade-in animation based on card index
+- **Interactive Hover**: Scale and lift effects on hover
+- **Progress Tracking**: Visual progress bar with percentage
+- **Due Count Badge**: Shows number of cards due for review
+- **Accessibility**: Full keyboard navigation and ARIA labels
+- **Responsive Design**: Adapts between grid and list view modes
+
+## Props
+
+<ParamField path="index" type="number" required>
+  Zero-based index of the card in the list. Used for staggered animation delays and numbering (displayed as "01", "02", etc.)
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Display name of the category (e.g., "React Hooks", "TypeScript Basics")
+</ParamField>
+
+<ParamField path="subtitle" type="string" required>
+  Descriptive subtitle for the category (e.g., "Master state management", "Core language features")
+</ParamField>
+
+<ParamField path="icon" type="string" required>
+  Material Icons icon name (e.g., "memory", "code", "functions")
+</ParamField>
+
+<ParamField path="abbrev" type="string" required>
+  Abbreviated category name displayed as background watermark (e.g., "RH", "TS")
+</ParamField>
+
+<ParamField path="colorClass" type="string" required>
+  Tailwind CSS gradient class for the card background
+  
+  Example: `"bg-gradient-to-br from-blue-400 to-indigo-500"`
+</ParamField>
+
+<ParamField path="progress" type="number" required>
+  Progress percentage (0-100) indicating how many terms have been mastered
+</ParamField>
+
+<ParamField path="isGridView" type="boolean" default="false">
+  Layout mode:
+  - `true`: Grid view with rounded corners and fixed height
+  - `false`: List view with bottom border only
+</ParamField>
+
+<ParamField path="dueCount" type="number" default="0">
+  Number of cards due for spaced repetition review. When > 0, displays a pulsing badge.
+</ParamField>
+
+<ParamField path="onClick" type="() => void" required>
+  Callback function triggered when card is clicked or activated via keyboard
+</ParamField>
+
+## Usage Example
+
+```tsx
+import { CategoryCard } from '@/components/CategoryCard';
+import { useRouter } from 'next/router';
+
+function CategoryList() {
+  const router = useRouter();
+  
+  const categories = [
+    {
+      name: 'React Hooks',
+      subtitle: 'Master state management',
+      icon: 'memory',
+      abbrev: 'RH',
+      colorClass: 'bg-gradient-to-br from-blue-400 to-indigo-500',
+      progress: 75,
+      dueCount: 3
+    },
+    {
+      name: 'TypeScript',
+      subtitle: 'Type-safe JavaScript',
+      icon: 'code',
+      abbrev: 'TS',
+      colorClass: 'bg-gradient-to-br from-cyan-400 to-blue-500',
+      progress: 42,
+      dueCount: 0
+    }
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {categories.map((cat, index) => (
+        <CategoryCard
+          key={index}
+          index={index}
+          name={cat.name}
+          subtitle={cat.subtitle}
+          icon={cat.icon}
+          abbrev={cat.abbrev}
+          colorClass={cat.colorClass}
+          progress={cat.progress}
+          isGridView={true}
+          dueCount={cat.dueCount}
+          onClick={() => router.push(`/study/${cat.name.toLowerCase()}`)}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+## Visual Structure
+
+### Top Section
+
+- **Number Badge**: Formatted index (e.g., "01", "02")
+- **Title**: Large, bold category name
+- **Subtitle**: Descriptive text with subtle styling
+- **Icon**: Material Icons symbol in category color
+- **Due Badge**: Pulsing amber badge when cards are due
+
+### Bottom Section
+
+- **Progress Label**: "PROGRESS" in uppercase tracking
+- **Progress Bar**: Animated fill based on completion percentage
+- **Progress Text**: Shows percentage or "Start →" if 0%
+
+### Background Elements
+
+- **Watermark**: Large, semi-transparent abbreviation
+- **Color Gradient**: Full card background in category color
+
+## Animations
+
+### Entry Animation
+
+```tsx
+initial={{ opacity: 0, y: 20 }}
+animate={{ opacity: 1, y: 0 }}
+transition={{ delay: index * 0.03, duration: 0.2 }}
+```
+
+Staggered fade-in with 30ms delay between cards.
+
+### Hover Effects
+
+```tsx
+whileHover={{ scale: 1.03, y: -2 }}
+```
+
+Slightly enlarges and lifts the card on hover.
+
+### Tap Feedback
+
+```tsx
+whileTap={{ scale: 0.98 }}
+```
+
+Subtle scale-down effect when clicked.
+
+### Progress Bar Animation
+
+```tsx
+initial={{ width: 0 }}
+animate={{ width: `${progress}%` }}
+transition={{ delay: index * 0.03 + 0.1, duration: 0.3 }}
+```
+
+Progress bar fills smoothly after card appears.
+
+## Layout Modes
+
+### Grid View (`isGridView={true}`)
+
+```css
+rounded-2xl border-2 h-32 sm:h-36
+```
+
+- Rounded corners on all sides
+- Fixed height (32-36 based on screen size)
+- 2px border
+- Suitable for 2-column or 3-column grids
+
+### List View (`isGridView={false}`)
+
+```css
+min-h-32 border-b-2
+```
+
+- Border on bottom only
+- Minimum height with flexible expansion
+- Full-width layout
+- Stacks vertically
+
+## Due Count Badge
+
+When `dueCount > 0`, displays a pulsing badge:
+
+```tsx
+{dueCount > 0 && (
+  <span
+    className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-white rounded-full animate-pulse"
+    title={`${dueCount} card${dueCount > 1 ? 's' : ''} due for review`}
+  >
+    {dueCount} due
+  </span>
+)}
+```
+
+- Amber background color
+- Pulse animation to draw attention
+- Shows exact count
+- Tooltip with full text
+
+## Accessibility Features
+
+### Keyboard Navigation
+
+```tsx
+role="button"
+tabIndex={0}
+onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
+```
+
+- Accessible as a button via keyboard
+- Enter and Space keys trigger action
+- Tab navigation support
+
+### ARIA Labels
+
+```tsx
+aria-label={`Study ${name} - ${subtitle}. Progress: ${progress}%`}
+```
+
+Provides screen readers with full context.
+
+### Progress Bar Attributes
+
+```tsx
+role="progressbar"
+aria-valuenow={progress}
+aria-valuemin={0}
+aria-valuemax={100}
+aria-label={`${name} progress`}
+```
+
+Semantic progress indication for assistive technologies.
+
+## Styling Notes
+
+### Text Shadow
+
+Subtitle uses a subtle text shadow for better readability over gradient backgrounds:
+
+```tsx
+style={{ textShadow: '0 1px 2px rgba(0,0,0,0.15)' }}
+```
+
+### Watermark Opacity
+
+Background abbreviation uses extremely low opacity to avoid distraction:
+
+```tsx
+text-foreground/[0.04]
+```
+
+### Focus Styles
+
+```css
+focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+```
+
+Provides clear focus indicator for keyboard navigation.
+
+## Progress Display Logic
+
+```tsx
+{progress > 0 ? `${progress}%` : 'Start →'}
+```
+
+- Shows percentage when progress exists
+- Shows "Start →" call-to-action for new categories
+
+## Source Code Reference
+
+See the full implementation in `/workspace/source/src/components/CategoryCard.tsx`

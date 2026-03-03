@@ -1,0 +1,609 @@
+---
+title: Tech Stack
+description: Technologies, frameworks, and libraries used in Vocab Vault with versions and rationale
+---
+
+Vocab Vault is built with modern web technologies optimized for performance, developer experience, and mobile-first delivery.
+
+## Core Framework
+
+### React 18.3.1
+
+**Why React:**
+- Industry-standard component model
+- Excellent mobile performance with proper optimization
+- Rich ecosystem for UI components
+- Strong TypeScript support
+- Concurrent rendering features for smoother animations
+
+**Key features used:**
+- Hooks for state management (`useState`, `useEffect`, `useCallback`)
+- Error Boundaries for graceful error handling
+- Concurrent features for animation prioritization
+- Strict Mode for catching potential issues early
+
+### TypeScript 5.8.3
+
+**Why TypeScript:**
+- Catch bugs at compile time, not runtime
+- Better IDE autocomplete and documentation
+- Safer refactoring for long-term maintenance
+- Type-safe data structures for vocabulary and progress
+
+**TypeScript configuration highlights:**
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx"
+  }
+}
+```
+
+## Build Tools
+
+### Vite 5.4.19
+
+**Why Vite over Create React App:**
+- ⚡ **10-100x faster** - Dev server starts in &lt;1 second
+- 🔥 **Instant HMR** - Hot module replacement without refresh
+- 📦 **Better bundle optimization** - ESBuild for blazing fast builds
+- 🎯 **Modern by default** - ES modules, tree-shaking out of the box
+- 🔧 **Simple config** - Less boilerplate than webpack
+
+**Vite plugins:**
+- `@vitejs/plugin-react-swc` - Fast Refresh using SWC compiler
+- `rollup-plugin-visualizer` - Bundle size analysis
+- `lovable-tagger` - Development component tracking
+
+### Capacitor 8.0.2
+
+**Native mobile bridge:**
+
+<Tabs>
+  <Tab title="Core">
+    `@capacitor/core` - Core API for native bridge
+    
+    Enables JavaScript to communicate with native iOS/Android code
+  </Tab>
+  
+  <Tab title="Plugins">
+    - `@capacitor/preferences` - Native key-value storage (replaces localStorage)
+    - `@capacitor/share` - Native share sheets
+    - `@capacitor/android` - Android platform support
+  </Tab>
+  
+  <Tab title="Config">
+    ```ts
+    const config: CapacitorConfig = {
+      appId: 'com.dbcreations.vocabvault',
+      appName: 'Vocab Vault',
+      webDir: 'dist'
+    };
+    ```
+  </Tab>
+</Tabs>
+
+**Why Capacitor over React Native:**
+- Uses standard web technologies (React, not React Native components)
+- Single codebase for web, iOS, and Android
+- No bridge performance issues
+- Easier to debug (web DevTools work)
+- Progressive: start web, add native later
+
+## Styling
+
+### Tailwind CSS 3.4.17
+
+**Utility-first CSS framework:**
+
+```tsx
+<div className="flex items-center justify-between p-4 bg-card rounded-xl shadow-card">
+  <h2 className="text-lg font-display">Category</h2>
+  <Badge className="bg-category-yellow">24 terms</Badge>
+</div>
+```
+
+**Benefits:**
+- 🎨 No CSS file management - styles live with components
+- 📦 Tiny production bundle - PurgeCSS removes unused classes
+- 🔄 Easy refactoring - rename component without orphaned CSS
+- 📱 Responsive utilities - `md:`, `lg:` breakpoints
+- 🌙 Dark mode - `dark:` variant built-in
+
+**Tailwind plugins:**
+- `tailwindcss-animate` - Pre-built animation utilities
+- `@tailwindcss/typography` - Beautiful prose styles
+
+### Custom Design System
+
+Tailwind is extended with Vocab Vault's design tokens from `~/workspace/source/tailwind.config.ts:16`:
+
+```ts
+theme: {
+  extend: {
+    fontFamily: {
+      sans: ["Inter", "sans-serif"],
+      display: ["Space Grotesk", "sans-serif"],
+    },
+    colors: {
+      category: {
+        yellow: "hsl(var(--category-yellow))",
+        pink: "hsl(var(--category-pink))",
+        // 24 category colors...
+      }
+    },
+    borderRadius: {
+      xl: "1.5rem",
+      "2xl": "2rem",
+      "3xl": "3rem",
+    },
+    boxShadow: {
+      heavy: "var(--shadow-heavy)",
+      card: "var(--shadow-card)",
+    }
+  }
+}
+```
+
+**CSS Variables:**
+Colors are HSL-based CSS variables for easy theming:
+
+```css
+:root {
+  --category-yellow: 48 96% 89%;
+  --category-pink: 330 85% 91%;
+}
+
+.dark {
+  --category-yellow: 48 50% 30%;
+  --category-pink: 330 40% 25%;
+}
+```
+
+## UI Components
+
+### shadcn/ui
+
+**Component philosophy:**
+
+<Warning>
+shadcn/ui is NOT an npm package - components are copied into your project:
+</Warning>
+
+```bash
+# Components live in src/components/ui/
+├── button.tsx
+├── dialog.tsx
+├── tooltip.tsx
+└── ...
+```
+
+**Advantages:**
+- ✅ Full control - modify any component
+- ✅ No version conflicts - no npm dependencies
+- ✅ Tree-shakeable - only include what you use
+- ✅ Customizable - Tailwind classes, not CSS-in-JS
+
+**Built on Radix UI:**
+- `@radix-ui/react-dialog` - Accessible modals
+- `@radix-ui/react-tooltip` - Smart popovers
+- `@radix-ui/react-toast` - Notification system
+- `@radix-ui/react-toggle` - Toggle buttons
+- `@radix-ui/react-label` - Form labels
+
+**Why Radix:**
+- WAI-ARIA compliant out of the box
+- Keyboard navigation built-in
+- Focus management handled automatically
+- Unstyled (bring your own styles)
+- Battle-tested by major companies
+
+### Utility Libraries
+
+**Class management:**
+```tsx
+import { cn } from "@/lib/utils";
+
+// Combines Tailwind classes intelligently
+<div className={cn(
+  "base-class",
+  isActive && "active-class",
+  className // User override
+)} />
+```
+
+Powered by:
+- `clsx` ^2.1.1 - Conditional class names
+- `tailwind-merge` ^2.6.0 - Deduplicates Tailwind classes
+- `class-variance-authority` ^0.7.1 - Type-safe component variants
+
+## Animation & Interaction
+
+### Framer Motion 12.29.0
+
+**Production-grade animation library:**
+
+```tsx
+import { motion } from "framer-motion";
+
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -20 }}
+  transition={{ type: "spring", stiffness: 300 }}
+>
+  {children}
+</motion.div>
+```
+
+**Features used:**
+- `motion` components - Animated divs, buttons, lists
+- `AnimatePresence` - Exit animations for removed elements
+- `drag` - Swipe gestures on flashcards
+- `useAnimation` - Imperative animation control
+- `useMotionValue` - Track drag position
+
+**Why Framer Motion:**
+- Declarative API (easier than raw CSS animations)
+- Physics-based springs (more natural feel)
+- Gesture support (drag, tap, hover)
+- Layout animations (automatic smooth resizing)
+- TypeScript support
+
+### canvas-confetti 1.9.4
+
+**Celebration effects:**
+
+```tsx
+import confetti from "canvas-confetti";
+
+confetti({
+  particleCount: 100,
+  spread: 70,
+  origin: { y: 0.6 }
+});
+```
+
+Triggered on:
+- Category completion
+- Achievement unlocks
+- Streak milestones
+
+## Routing
+
+### React Router DOM 6.30.1
+
+**Client-side routing:**
+
+```tsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+<BrowserRouter>
+  <Routes>
+    <Route path="/" element={<Index />} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+</BrowserRouter>
+```
+
+**Minimal routes:**
+Vocab Vault uses modal-based navigation instead of many routes:
+- `/` - Main app (category selection, study mode, stats)
+- `*` - 404 page for invalid URLs
+
+**Future route potential:**
+- `/category/:id` - Deep link to specific category
+- `/study/:mode` - Link to SRS or classic mode
+- `/achievements` - Achievement showcase page
+
+## State & Data
+
+### Date Utilities
+
+**date-fns 3.6.0:**
+
+```tsx
+import { format, differenceInDays } from "date-fns";
+
+format(new Date(), "PPP"); // "January 1st, 2026"
+differenceInDays(today, lastStudy); // 3
+```
+
+Used for:
+- Streak calculations
+- SRS review date formatting
+- Achievement timestamps
+
+**Why date-fns over moment:**
+- Tree-shakeable (only import what you use)
+- Immutable (safer than mutating dates)
+- Functional API (easier to test)
+- Smaller bundle size
+
+### Icons
+
+**lucide-react 0.462.0:**
+
+```tsx
+import { Trophy, Calendar, Sparkles } from "lucide-react";
+
+<Trophy className="w-6 h-6 text-yellow-500" />
+```
+
+**Why Lucide:**
+- 1000+ icons, consistent design
+- Tree-shakeable React components
+- Actively maintained (forked from Feather Icons)
+- Customizable with props (size, color, strokeWidth)
+
+## Theming
+
+### next-themes 0.3.0
+
+**Dark mode system:**
+
+```tsx
+import { ThemeProvider } from "next-themes";
+
+<ThemeProvider attribute="class" defaultTheme="light">
+  <App />
+</ThemeProvider>
+```
+
+**Features:**
+- System preference detection
+- Persistent theme choice
+- No flash on page load
+- CSS variable-based themes
+
+Works with Tailwind's `dark:` variant:
+
+```tsx
+<div className="bg-white dark:bg-gray-900 text-black dark:text-white">
+  Theme-aware content
+</div>
+```
+
+## Notifications
+
+### Sonner 1.7.4
+
+**Beautiful toast notifications:**
+
+```tsx
+import { toast } from "sonner";
+
+toast.success("Card marked as learned!");
+toast.error("Failed to save progress");
+toast.info("5 day streak!", { icon: "🔥" });
+```
+
+**Features:**
+- Stacking toasts (multiple at once)
+- Promise-based loading states
+- Rich content (JSX support)
+- Swipe to dismiss
+- Accessible (ARIA live regions)
+
+**Why Sonner over react-hot-toast:**
+- Better animations
+- More customization options
+- Active development
+- Built-in dark mode support
+
+## Development Tools
+
+### Code Quality
+
+**ESLint 9.32.0:**
+```bash
+npm run lint
+```
+
+Plugins:
+- `eslint-plugin-react-hooks` - Enforce hooks rules
+- `eslint-plugin-react-refresh` - HMR-safe components
+- `typescript-eslint` - TypeScript-specific linting
+
+**Globals 15.15.0:**
+Provides global type definitions for Node, browser APIs, etc.
+
+### Testing
+
+**Vitest 3.2.4:**
+```bash
+npm run test
+npm run test:watch
+```
+
+**Why Vitest over Jest:**
+- Native Vite integration (same config)
+- Faster test execution (ESBuild)
+- Compatible with Jest API (easy migration)
+- Better TypeScript support
+- Component testing with `@testing-library/react`
+
+**Testing libraries:**
+- `@testing-library/react` 16.0.0 - Component testing
+- `@testing-library/jest-dom` 6.6.0 - DOM matchers
+- `jsdom` 20.0.3 - DOM environment for tests
+
+### Build Analysis
+
+**rollup-plugin-visualizer 6.0.5:**
+
+Generates `dist/stats.html` showing bundle composition:
+- Which dependencies are largest
+- How code splitting worked
+- Gzip/Brotli compressed sizes
+
+### Debugging
+
+**lovable-tagger 1.1.13:**
+
+Dev-only tool that tags components in the DOM for easier debugging:
+
+```html
+<!-- In development: -->
+<div data-component="FlashCard" data-file="FlashCard.tsx">
+  ...
+</div>
+```
+
+### Patching
+
+**patch-package 8.0.1:**
+
+Allows patching node_modules directly:
+
+```bash
+npm run postinstall  # Applies patches after npm install
+```
+
+Useful for quick fixes to dependencies before official updates.
+
+## Asset Pipeline
+
+### PostCSS 8.5.6
+
+**CSS processor:**
+
+Plugins:
+- `autoprefixer` 10.4.21 - Adds vendor prefixes automatically
+- `tailwindcss` - Processes Tailwind directives
+
+No manual vendor prefixes needed:
+
+```css
+/* You write: */
+.card {
+  user-select: none;
+}
+
+/* PostCSS outputs: */
+.card {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+```
+
+### Capacitor Assets 3.0.5
+
+**Icon and splash screen generator:**
+
+```bash
+npx capacitor-assets generate
+```
+
+Creates all required app icons and splash screens from source images:
+- iOS: App icons, launch screens (various sizes)
+- Android: Launcher icons, adaptive icons, splash screens
+
+## Dependencies Overview
+
+### Production Dependencies (17)
+
+<Accordion title="View all production dependencies">
+```json
+{
+  "@capacitor/android": "^8.0.2",
+  "@capacitor/core": "^8.0.2",
+  "@capacitor/preferences": "^8.0.0",
+  "@capacitor/share": "^8.0.1",
+  "@radix-ui/react-dialog": "^1.1.14",
+  "@radix-ui/react-label": "^2.1.7",
+  "@radix-ui/react-separator": "^1.1.7",
+  "@radix-ui/react-slot": "^1.2.3",
+  "@radix-ui/react-toast": "^1.2.14",
+  "@radix-ui/react-toggle": "^1.1.9",
+  "@radix-ui/react-tooltip": "^1.2.7",
+  "canvas-confetti": "^1.9.4",
+  "class-variance-authority": "^0.7.1",
+  "clsx": "^2.1.1",
+  "date-fns": "^3.6.0",
+  "framer-motion": "^12.29.0",
+  "lucide-react": "^0.462.0",
+  "next-themes": "^0.3.0",
+  "react": "^18.3.1",
+  "react-dom": "^18.3.1",
+  "react-router-dom": "^6.30.1",
+  "sonner": "^1.7.4",
+  "tailwind-merge": "^2.6.0",
+  "tailwindcss-animate": "^1.0.7"
+}
+```
+</Accordion>
+
+### Development Dependencies (19)
+
+<Accordion title="View all dev dependencies">
+```json
+{
+  "@capacitor/assets": "^3.0.5",
+  "@capacitor/cli": "^8.0.2",
+  "@eslint/js": "^9.32.0",
+  "@tailwindcss/typography": "^0.5.16",
+  "@testing-library/jest-dom": "^6.6.0",
+  "@testing-library/react": "^16.0.0",
+  "@types/node": "^22.16.5",
+  "@types/react": "^18.3.23",
+  "@types/react-dom": "^18.3.7",
+  "@vitejs/plugin-react-swc": "^3.11.0",
+  "autoprefixer": "^10.4.21",
+  "eslint": "^9.32.0",
+  "eslint-plugin-react-hooks": "^5.2.0",
+  "eslint-plugin-react-refresh": "^0.4.20",
+  "globals": "^15.15.0",
+  "jsdom": "^20.0.3",
+  "lovable-tagger": "^1.1.13",
+  "patch-package": "^8.0.1",
+  "postcss": "^8.5.6",
+  "rollup-plugin-visualizer": "^6.0.5",
+  "tailwindcss": "^3.4.17",
+  "typescript": "^5.8.3",
+  "typescript-eslint": "^8.38.0",
+  "vite": "^5.4.19",
+  "vitest": "^3.2.4"
+}
+```
+</Accordion>
+
+## Version Strategy
+
+<Info>
+All dependencies use caret ranges (`^`) for automatic minor/patch updates while preventing breaking changes.
+</Info>
+
+**Update schedule:**
+- **Weekly** - Security patches (npm audit fix)
+- **Monthly** - Minor version updates
+- **Quarterly** - Major version updates (with testing)
+
+## Why This Stack?
+
+<CardGroup cols={2}>
+  <Card title="Developer Experience" icon="code">
+    Vite + TypeScript + Tailwind = fast iteration with confidence
+  </Card>
+  
+  <Card title="Performance" icon="bolt">
+    Modern bundling, code splitting, and optimized animations
+  </Card>
+  
+  <Card title="Mobile-First" icon="mobile">
+    Capacitor enables true native apps from web code
+  </Card>
+  
+  <Card title="Maintainability" icon="wrench">
+    TypeScript safety, shadcn flexibility, clear architecture
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+This stack prioritizes **shipping fast** while maintaining **long-term quality** - perfect for indie developers and small teams.
+</Note>
