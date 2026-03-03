@@ -1,0 +1,117 @@
+{
+  "projectType": "saas",
+  "projectName": "Vocab Vault",
+  "projectDescription": "A mobile-first flashcard app helping aspiring developers master coding vocabulary through gamified learning with achievements, streaks, and spaced repetition.",
+  "theme": "almond",
+  "primaryColor": "#10b981",
+  "lightColor": "#34d399",
+  "darkColor": "#059669",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/flashcard-mode",
+              "features/quiz-mode",
+              "features/categories",
+              "features/eli5-mode",
+              "features/progress-tracking"
+            ]
+          },
+          {
+            "group": "Learning System",
+            "pages": [
+              "learning/spaced-repetition",
+              "learning/achievements",
+              "learning/streaks",
+              "learning/daily-goals"
+            ]
+          },
+          {
+            "group": "Vocabulary Reference",
+            "pages": [
+              "vocabulary/overview",
+              "vocabulary/categories-list",
+              "vocabulary/search"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Architecture",
+            "pages": [
+              "development/overview",
+              "development/tech-stack",
+              "development/project-structure"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "development/components/flashcard",
+              "development/components/category-card",
+              "development/components/header",
+              "development/components/achievements"
+            ]
+          },
+          {
+            "group": "Data & Storage",
+            "pages": [
+              "development/data-model",
+              "development/vocabulary-data",
+              "development/local-storage",
+              "development/progress-tracking"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "development/building",
+              "development/testing",
+              "development/mobile-deployment",
+              "development/contributing"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "500+ coding vocabulary terms across 24 categories",
+    "Flashcard and quiz learning modes",
+    "Spaced repetition system (SRS) for optimized learning",
+    "ELI5 mode with beginner-friendly definitions",
+    "Achievement system with 30+ unlockable badges",
+    "Daily streak tracking and goal setting",
+    "Offline-first with local storage via Capacitor",
+    "Mobile-ready with Android app support",
+    "Dark mode and theme customization",
+    "Progress tracking per category and term"
+  ],
+  "publicApiSurface": [
+    "useProgress hook - Main progress tracking and state management",
+    "useDailyGoals hook - Daily goal tracking and widget state",
+    "useSpeech hook - Text-to-speech functionality",
+    "SM2 algorithm (lib/sm2.ts) - Spaced repetition calculations",
+    "vocabulary.ts - 500+ term definitions with categories",
+    "achievements.ts - Achievement conditions and unlocking logic",
+    "FlashCard component - Interactive card with flip and swipe",
+    "QuizMode component - Multiple choice quiz interface",
+    "CategoryCard component - Category selection tiles",
+    "AchievementsModal component - Achievement display and tracking"
+  ]
+}
